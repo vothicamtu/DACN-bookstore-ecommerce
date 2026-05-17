@@ -1,0 +1,1 @@
+- Hằng số frontend (URL, Configs)
