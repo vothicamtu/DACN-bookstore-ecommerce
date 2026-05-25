@@ -1,0 +1,226 @@
+:root {
+  --bookland-bg: #ffffff;
+  --bookland-surface: #fffaf0;
+  --bookland-surface-strong: #f7ecd0;
+  --bookland-border: #eadfca;
+  --bookland-text: #302416;
+  --bookland-muted: #7f6a55;
+  --bookland-accent: #d8a85e;
+  --bookland-accent-soft: #f4e1bb;
+  --bookland-shadow: 0 18px 40px rgba(88, 59, 20, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bookland-bg);
+  color: var(--bookland-text);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+/* Page-specific styles moved to ProductAllPage.css */
+
+.bookland-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 36px;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(234, 223, 202, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+.bookland-header__logo,
+.bookland-footer__logo {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #8a5f20;
+}
+
+.bookland-header__nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.bookland-header__link {
+  position: relative;
+  color: var(--bookland-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.bookland-header__link:hover {
+  color: var(--bookland-text);
+}
+
+.bookland-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bookland-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 260px;
+  padding: 10px 14px;
+  background: var(--bookland-surface);
+  border: 1px solid var(--bookland-border);
+  border-radius: 999px;
+}
+
+.bookland-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--bookland-text);
+}
+
+.bookland-search input::placeholder {
+  color: #a08b72;
+}
+
+.bookland-search__icon,
+.bookland-header__iconButton {
+  flex: 0 0 auto;
+  color: #8d6b2f;
+}
+
+.bookland-search__icon svg,
+.bookland-header__iconButton svg,
+.bookland-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.bookland-header__iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.bookland-header__iconButton:hover {
+  background: var(--bookland-surface);
+  border-color: var(--bookland-border);
+}
+
+.bookland-footer {
+  background: linear-gradient(180deg, #fffdf8 0%, #f7efd9 100%);
+  border-top: 1px solid rgba(234, 223, 202, 0.9);
+}
+
+.bookland-footer__inner {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, 1fr);
+  gap: 28px;
+  padding: 52px 36px 32px;
+}
+
+.bookland-footer__brandBlock p,
+.bookland-footer__column p,
+.bookland-footer__column a {
+  color: var(--bookland-muted);
+  line-height: 1.8;
+  margin: 0;
+}
+
+.bookland-footer__column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bookland-footer__column h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  color: var(--bookland-text);
+}
+
+.bookland-footer__bottom {
+  padding: 16px 36px 28px;
+  text-align: center;
+  color: var(--bookland-muted);
+  border-top: 1px solid rgba(234, 223, 202, 0.7);
+}
+
+@media (max-width: 1100px) {
+  .bookland-header {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .bookland-header__nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bookland-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .bookland-filters {
+    position: static;
+  }
+
+  .bookland-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bookland-footer__inner {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .bookland-header,
+  .bookland-footer__inner,
+  .bookland-footer__bottom {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .bookland-search {
+    min-width: 100%;
+  }
+
+  .bookland-header__actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .bookland-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bookland-footer__inner {
+    grid-template-columns: 1fr;
+  }
+}
