@@ -1,0 +1,23 @@
+# IntelliJ
+.idea/
+*.iml
+
+# VSCode
+.vscode/
+
+# Java
+target/
+*.class
+out/
+
+# Logs
+*.log
+*.err.log
+
+# Node
+node_modules/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
