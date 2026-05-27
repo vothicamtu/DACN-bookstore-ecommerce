@@ -1,4 +1,4 @@
-package cntt.dacn.backend.entity;
+spackage cntt.dacn.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
