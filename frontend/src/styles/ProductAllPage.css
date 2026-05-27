@@ -150,13 +150,79 @@
 }
 
 .bookland-sortSelect {
+  position: relative;
   width: 100%;
-  padding: 12px 14px;
+}
+.bookland-sortSelect__button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px 0 20px;
   border: 1px solid #e0cda2;
-  border-radius: 10px;
+  border-radius: 11px;
   background: #fffaf0;
   color: var(--bookland-text);
+  font: inherit;
+  font-size: 0.98rem;
   outline: none;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+.bookland-sortSelect__button:hover,
+.bookland-sortSelect__button:focus-visible {
+  border-color: #d0ad67;
+  background: #fff8e8;
+  box-shadow: 0 0 0 3px rgba(216, 168, 94, 0.16);
+}
+.bookland-sortSelect__chevron {
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid #2f2519;
+  border-bottom: 2px solid #2f2519;
+  transform: translateY(-2px) rotate(45deg);
+  flex: 0 0 auto;
+}
+.bookland-sortSelect__menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  padding: 6px;
+  border: 1px solid #e0cda2;
+  border-radius: 11px;
+  background: #fffaf0;
+  box-shadow: 0 14px 30px rgba(88, 59, 20, 0.16);
+}
+.bookland-sortSelect__option {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--bookland-text);
+  font: inherit;
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+}
+.bookland-sortSelect__option:hover,
+.bookland-sortSelect__option:focus-visible {
+  background: #f3dfb8;
+  outline: none;
+}
+.bookland-sortSelect__option.is-selected {
+  background: #ead3a4;
+  color: #6c4718;
+  font-weight: 700;
 }
 .bookland-filterReset {
   width: 100%;

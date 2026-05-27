@@ -1,7 +1,7 @@
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../styles/ProductAllPage.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type Product = {
 	id: number;
@@ -102,9 +102,12 @@ export default function ProductAllPage() {
 	const [maxPrice, setMaxPrice] = useState('');
 	const [minRating, setMinRating] = useState(0);
 	const [sort, setSort] = useState('popular');
+	const [isSortOpen, setIsSortOpen] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalItems, setTotalItems] = useState(0);
+	const sortDropdownRef = useRef<HTMLDivElement>(null);
+	const selectedSortLabel = sortOptions.find((option) => option.value === sort)?.label ?? 'Sắp xếp';
 
 	useEffect(() => {
 		const controller = new AbortController();
@@ -156,6 +159,17 @@ export default function ProductAllPage() {
 
 		return () => controller.abort();
 	}, [selectedCategory, minPrice, maxPrice, minRating, sort, currentPage]);
+
+	useEffect(() => {
+		function handlePointerDown(event: MouseEvent) {
+			if (!sortDropdownRef.current?.contains(event.target as Node)) {
+				setIsSortOpen(false);
+			}
+		}
+
+		document.addEventListener('mousedown', handlePointerDown);
+		return () => document.removeEventListener('mousedown', handlePointerDown);
+	}, []);
 
 	function resetFilters() {
 		setSelectedCategory('Tất cả');
@@ -271,20 +285,39 @@ export default function ProductAllPage() {
 
 							<div className="bookland-filterGroup">
 								<h2>SẮP XẾP</h2>
-								<select
-									className="bookland-sortSelect"
-									value={sort}
-									onChange={(event) => {
-										setSort(event.target.value);
-										setCurrentPage(1);
-									}}
-								>
-									{sortOptions.map((option) => (
-										<option key={option.value} value={option.value}>
-											{option.label}
-										</option>
-									))}
-								</select>
+								<div className="bookland-sortSelect" ref={sortDropdownRef}>
+									<button
+										type="button"
+										className="bookland-sortSelect__button"
+										aria-haspopup="listbox"
+										aria-expanded={isSortOpen}
+										onClick={() => setIsSortOpen((open) => !open)}
+									>
+										<span>{selectedSortLabel}</span>
+										<span className="bookland-sortSelect__chevron" aria-hidden="true" />
+									</button>
+
+									{isSortOpen ? (
+										<div className="bookland-sortSelect__menu" role="listbox">
+											{sortOptions.map((option) => (
+												<button
+													key={option.value}
+													type="button"
+													className={`bookland-sortSelect__option ${sort === option.value ? 'is-selected' : ''}`}
+													role="option"
+													aria-selected={sort === option.value}
+													onClick={() => {
+														setSort(option.value);
+														setCurrentPage(1);
+														setIsSortOpen(false);
+													}}
+												>
+													{option.label}
+												</button>
+											))}
+										</div>
+									) : null}
+								</div>
 							</div>
 
 							<button type="button" className="bookland-filterReset" onClick={resetFilters}>
