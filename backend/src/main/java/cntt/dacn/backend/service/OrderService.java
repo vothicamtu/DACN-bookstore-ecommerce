@@ -33,8 +33,25 @@ public class OrderService {
     public OrderPageResponse getOrders(Long userId, Order.OrderStatus status, int page, int size) {
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 1), 50);
-        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Order> orders = orderRepository.findAll(buildSpecification(userId, status), pageable);
+
+        Pageable pageable = PageRequest.of(
+                safePage,
+                safeSize,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
+        Page<Order> orders;
+
+        if (userId != null && status != null) {
+            orders = orderRepository.findByUserIdAndOrderStatus(userId, status, pageable);
+        } else if (userId != null) {
+            orders = orderRepository.findByUserId(userId, pageable);
+        } else if (status != null) {
+            orders = orderRepository.findByOrderStatus(status, pageable);
+        } else {
+            orders = orderRepository.findAll(pageable);
+        }
+
         List<OrderResponse> items = new ArrayList<>();
 
         for (Order order : orders.getContent()) {
@@ -54,7 +71,6 @@ public class OrderService {
                 processingItems
         );
     }
-
     @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long id) {
         Optional<Order> orderOptional = orderRepository.findById(id);
@@ -64,22 +80,6 @@ public class OrderService {
         }
 
         return toOrderResponse(orderOptional.get());
-    }
-
-    private Specification<Order> buildSpecification(Long userId, Order.OrderStatus status) {
-        Specification<Order> specification = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
-
-        if (userId != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get("user").get("id"), userId));
-        }
-
-        if (status != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get("orderStatus"), status));
-        }
-
-        return specification;
     }
 
     private OrderResponse toOrderResponse(Order order) {
