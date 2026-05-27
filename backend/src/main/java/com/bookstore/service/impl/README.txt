@@ -1,2 +1,0 @@
-- Implementations thực thi lõi nghiệp vụ
-- Giao tiếp giữa Controller và Repository
