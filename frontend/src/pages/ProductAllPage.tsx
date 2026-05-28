@@ -4,70 +4,117 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../styles/ProductAllPage.css';
 
-interface Book {
-	id: number;
-	title: string;
-	imageUrl: string;
-	description: string;
-	price: number;
-	discountPercent: number;
-	stock: number;
-	translator: string;
-	pageCount: number;
-	size: string;
-	publishDate: string;
-	averageRating: number;
-	categoryName: string;
-	authorName: string;
-	publisherName: string;
-}
-
 interface Category {
 	id: number;
 	categoryName: string;
 	description: string;
 }
 
-const getAccentClass = (id: number) => {
-	const accents = [
-		'book-cover--blue',
-		'book-cover--sand',
-		'book-cover--light',
-		'book-cover--graphite',
-		'book-cover--brown',
-		'book-cover--gray'
-	];
-	return accents[id % accents.length];
+type Product = {
+	id: number;
+	category: string;
+	title: string;
+	author: string;
+	imageUrl?: string;
+	price: string;
+	oldPrice?: string;
+	rating: string;
+	accent: string;
 };
 
-export default function ProductAllPage() {
-	const [books, setBooks] = useState<Book[]>([]);
-	const [categories, setCategories] = useState<Category[]>([]);
-	const [keyword, setKeyword] = useState("");
-	const [categoryId, setCategoryId] = useState<any>("");
-	const [minPrice, setMinPrice] = useState("");
-	const [maxPrice, setMaxPrice] = useState("");
-	const [page, setPage] = useState(0);
-	const [totalPages, setTotalPages] = useState(0);
+type ApiProduct = {
+	id: number;
+	title: string;
+	imageUrl?: string | null;
+	price: number;
+	discountPercent?: number | null;
+	averageRating?: number | null;
+	categoryName?: string | null;
+	authorName?: string | null;
+};
 
-	const fetchBooks = async (pageNumber: number = page) => {
-		try {
-			const response = await axiosClient.get("/books/search", {
-				params: {
-					keyword: keyword || null,
-					categoryId: categoryId || null,
-					minPrice: minPrice || null,
-					maxPrice: maxPrice || null,
-					page: pageNumber,
-					size: 6,
-				},
-			});
-			setBooks(response.data.data.content);
-			setTotalPages(response.data.data.totalPages);
-		} catch (error) {
-			console.error(error);
-		}
+type ApiProductPage = {
+	items: ApiProduct[];
+	page: number;
+	size: number;
+	totalPages: number;
+	totalItems: number;
+};
+
+const PRODUCTS_PER_PAGE = 9;
+
+const sortOptions = [
+	{ label: 'Bán chạy nhất', value: 'popular' },
+	{ label: 'Mới nhất', value: 'newest' },
+	{ label: 'Giá tăng dần', value: 'priceAsc' },
+	{ label: 'Giá giảm dần', value: 'priceDesc' },
+];
+
+const coverAccents = [
+	'book-cover--blue',
+	'book-cover--sand',
+	'book-cover--light',
+	'book-cover--graphite',
+	'book-cover--brown',
+	'book-cover--gray',
+];
+
+const currencyFormatter = new Intl.NumberFormat('vi-VN', {
+	style: 'currency',
+	currency: 'VND',
+	maximumFractionDigits: 0,
+});
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
+
+function resolveImageUrl(imageUrl?: string | null) {
+	if (!imageUrl) {
+		return undefined;
+	}
+
+	if (/^(https?:)?\/\//.test(imageUrl) || imageUrl.startsWith('data:')) {
+		return imageUrl;
+	}
+
+	const normalizedPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+	return `${API_BASE_URL}${normalizedPath}`;
+}
+
+function mapProduct(product: ApiProduct, index: number): Product {
+	const discountPercent = product.discountPercent ?? 0;
+	const oldPrice = discountPercent > 0
+		? product.price * (1 + discountPercent / 100)
+		: undefined;
+
+	return {
+		id: product.id,
+		category: product.categoryName ?? 'Chưa phân loại',
+		title: product.title,
+		author: product.authorName ?? 'Đang cập nhật',
+		imageUrl: resolveImageUrl(product.imageUrl),
+		price: currencyFormatter.format(product.price),
+		oldPrice: oldPrice ? currencyFormatter.format(oldPrice) : undefined,
+		rating: (product.averageRating ?? 0).toFixed(1),
+		accent: coverAccents[index % coverAccents.length],
 	};
+}
+
+export default function ProductAllPage() {
+	const [products, setProducts] = useState<Product[]>([]);
+	const [categories, setCategories] = useState<Category[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState('');
+	const [selectedCategory, setSelectedCategory] = useState('Tất cả');
+	const [minPrice, setMinPrice] = useState('');
+	const [maxPrice, setMaxPrice] = useState('');
+	const [minRating, setMinRating] = useState(0);
+	const [sort, setSort] = useState('popular');
+	const [currentPage, setCurrentPage] = useState(1);
+	const [totalPages, setTotalPages] = useState(0);
+	const [totalItems, setTotalItems] = useState(0);
+
+	const [keyword, setKeyword] = useState('');
+	const [appliedKeyword, setAppliedKeyword] = useState('');
 
 	const fetchCategories = async () => {
 		try {
@@ -79,25 +126,94 @@ export default function ProductAllPage() {
 	};
 
 	const handleSearch = () => {
-		if (page === 0) {
-			fetchBooks(0);
-		} else {
-			setPage(0);
-		}
+		setAppliedKeyword(keyword);
+		setCurrentPage(1);
 	};
-
-	const handleCategoryChange = (id: any) => {
-		setCategoryId(categoryId === id ? "" : id);
-		setPage(0);
-	};
-
-	useEffect(() => {
-		fetchBooks(page);
-	}, [page, categoryId]);
 
 	useEffect(() => {
 		fetchCategories();
 	}, []);
+
+	useEffect(() => {
+		let isMounted = true;
+		const params: any = {};
+
+		if (selectedCategory !== 'Tất cả') {
+			params.category = selectedCategory;
+		}
+
+		if (minPrice) {
+			params.minPrice = minPrice;
+		}
+
+		if (maxPrice) {
+			params.maxPrice = maxPrice;
+		}
+
+		if (minRating > 0) {
+			params.minRating = minRating;
+		}
+
+		if (appliedKeyword) {
+			params.keyword = appliedKeyword;
+		}
+
+		params.sort = sort;
+		params.page = currentPage - 1;
+		params.size = PRODUCTS_PER_PAGE;
+		setLoading(true);
+
+		axiosClient.get("/products", { params })
+			.then((response) => {
+				if (isMounted) {
+					const data = response.data as ApiProductPage;
+					setProducts(data.items.map(mapProduct));
+					setTotalPages(data.totalPages);
+					setTotalItems(data.totalItems);
+					setError('');
+				}
+			})
+			.catch((err: any) => {
+				if (isMounted) {
+					setError(err.message || 'Không lấy được danh sách sản phẩm');
+				}
+			})
+			.finally(() => {
+				if (isMounted) {
+					setLoading(false);
+				}
+			});
+
+		return () => {
+			isMounted = false;
+		};
+	}, [selectedCategory, minPrice, maxPrice, minRating, sort, currentPage, appliedKeyword]);
+
+	function resetFilters() {
+		setSelectedCategory('Tất cả');
+		setMinPrice('');
+		setMaxPrice('');
+		setMinRating(0);
+		setSort('popular');
+		setCurrentPage(1);
+		setKeyword('');
+		setAppliedKeyword('');
+	}
+
+	function getVisiblePages() {
+		return Array.from({ length: totalPages }, (_, index) => index + 1);
+	}
+
+	function selectCategory(category: string) {
+		setSelectedCategory(category);
+		setCurrentPage(1);
+
+		if (category === 'Tất cả') {
+			setMinPrice('');
+			setMaxPrice('');
+			setMinRating(0);
+		}
+	}
 
 	return (
 		<div className="bookland-page">
@@ -116,12 +232,19 @@ export default function ProductAllPage() {
 							<div className="bookland-filterGroup">
 								<h2>DANH MỤC</h2>
 								<div className="bookland-chipList">
+									<button
+										type="button"
+										className={`bookland-chip ${selectedCategory === 'Tất cả' ? 'is-active' : ''}`}
+										onClick={() => selectCategory('Tất cả')}
+									>
+										Tất cả
+									</button>
 									{categories.map((category) => (
 										<button
 											key={category.id}
 											type="button"
-											onClick={() => handleCategoryChange(category.id)}
-											className={`bookland-chip ${categoryId === category.id ? 'is-active' : ''}`}
+											className={`bookland-chip ${selectedCategory === category.categoryName ? 'is-active' : ''}`}
+											onClick={() => selectCategory(category.categoryName)}
 										>
 											{category.categoryName}
 										</button>
@@ -129,118 +252,120 @@ export default function ProductAllPage() {
 								</div>
 							</div>
 
-							<div className="bookland-filterGroup" style={{ marginBottom: '24px' }}>
-								<h2 style={{ fontSize: '0.82rem', fontWeight: '800', letterSpacing: '0.08em', color: '#8d6b2f', marginBottom: '14px' }}>KHOẢNG GIÁ</h2>
-								<div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
-									<input
-										type="number"
-										placeholder="Từ (đ)"
-										value={minPrice}
-										onChange={(e) => setMinPrice(e.target.value)}
-										style={{
-											border: '1px solid #eadfca',
-											borderRadius: '12px',
-											padding: '12px 16px',
-											background: '#fff',
-											width: '100%',
-											outline: 'none',
-											fontFamily: 'inherit',
-											fontSize: '0.95rem',
-											color: '#302416'
-										}}
-									/>
-									<input
-										type="number"
-										placeholder="Đến (đ)"
-										value={maxPrice}
-										onChange={(e) => setMaxPrice(e.target.value)}
-										style={{
-											border: '1px solid #eadfca',
-											borderRadius: '12px',
-											padding: '12px 16px',
-											background: '#fff',
-											width: '100%',
-											outline: 'none',
-											fontFamily: 'inherit',
-											fontSize: '0.95rem',
-											color: '#302416'
-										}}
-									/>
+							<div className="bookland-filterGroup">
+								<h2>KHOẢNG GIÁ</h2>
+								<div className="bookland-priceRange">
+									<label>
+										<span>Từ</span>
+										<input
+											type="number"
+											min="0"
+											step="10000"
+											placeholder="Từ (đ)"
+											value={minPrice}
+											onChange={(event) => {
+												setMinPrice(event.target.value);
+												setCurrentPage(1);
+											}}
+										/>
+									</label>
+									<label>
+										<span>Đến</span>
+										<input
+											type="number"
+											min="0"
+											step="10000"
+											placeholder="Đến (đ)"
+											value={maxPrice}
+											onChange={(event) => {
+												setMaxPrice(event.target.value);
+												setCurrentPage(1);
+											}}
+										/>
+									</label>
 								</div>
 							</div>
 
-							<div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '28px' }}>
-								<button
-									type="button"
-									onClick={handleSearch}
-									style={{
-										background: '#8c5a1e',
-										color: '#fff',
-										border: 'none',
-										borderRadius: '12px',
-										padding: '14px',
-										fontWeight: '600',
-										fontSize: '0.95rem',
-										cursor: 'pointer',
-										width: '100%',
-										transition: 'background 0.2s',
-										boxShadow: '0 4px 12px rgba(140, 90, 30, 0.15)'
-									}}
-									onMouseOver={(e) => e.currentTarget.style.background = '#734614'}
-									onMouseOut={(e) => e.currentTarget.style.background = '#8c5a1e'}
-								>
-									Áp dụng bộ lọc
-								</button>
-
-								<button
-									type="button"
-									onClick={() => {
-										setCategoryId("");
-										setMinPrice("");
-										setMaxPrice("");
-										setKeyword("");
-										setPage(0);
-									}}
-									style={{
-										background: 'transparent',
-										color: '#8c5a1e',
-										border: '2px solid #8c5a1e',
-										borderRadius: '12px',
-										padding: '12px',
-										fontWeight: '600',
-										fontSize: '0.95rem',
-										cursor: 'pointer',
-										width: '100%',
-										transition: 'all 0.2s'
-									}}
-									onMouseOver={(e) => {
-										e.currentTarget.style.background = 'rgba(140, 90, 30, 0.05)';
-									}}
-									onMouseOut={(e) => {
-										e.currentTarget.style.background = 'transparent';
-									}}
-								>
-									Xóa bộ lọc
-								</button>
+							<div className="bookland-filterGroup">
+								<h2>ĐÁNH GIÁ</h2>
+								<div className="bookland-ratingList">
+									<label className="bookland-ratingRow">
+										<input
+											type="checkbox"
+											checked={minRating === 4}
+											onChange={(event) => {
+												setMinRating(event.target.checked ? 4 : 0);
+												setCurrentPage(1);
+											}}
+										/>
+										<span className="bookland-ratingStars">★★★★★</span>
+										<span>Từ 4 sao</span>
+									</label>
+									<label className="bookland-ratingRow">
+										<input
+											type="checkbox"
+											checked={minRating === 3}
+											onChange={(event) => {
+												setMinRating(event.target.checked ? 3 : 0);
+												setCurrentPage(1);
+											}}
+										/>
+										<span className="bookland-ratingStars">★★★★★</span>
+										<span>Từ 3 sao</span>
+									</label>
+								</div>
 							</div>
+
+							<div className="bookland-filterGroup">
+								<h2>SẮP XẾP</h2>
+								<select
+									className="bookland-sortSelect"
+									value={sort}
+									onChange={(event) => {
+										setSort(event.target.value);
+										setCurrentPage(1);
+									}}
+								>
+									{sortOptions.map((option) => (
+										<option key={option.value} value={option.value}>
+											{option.label}
+										</option>
+									))}
+								</select>
+							</div>
+
+							<button type="button" className="bookland-filterReset" onClick={resetFilters}>
+								Xóa bộ lọc
+							</button>
 						</div>
 					</aside>
 
 					<div className="bookland-content">
-						{books.length === 0 ? (
-							<div className="text-center py-10 text-[#7f6a55]">
-								Không tìm thấy sách nào phù hợp.
-							</div>
+						<div className="bookland-resultSummary">
+							{totalItems > 0 ? `Hiển thị ${products.length} / ${totalItems} sản phẩm` : 'Không có sản phẩm phù hợp'}
+						</div>
+
+						{loading ? (
+							<div className="bookland-state">Đang tải sản phẩm...</div>
+						) : error ? (
+							<div className="bookland-state bookland-state--error">{error}</div>
+						) : products.length === 0 ? (
+							<div className="bookland-state">Không có sản phẩm.</div>
 						) : (
 							<div className="bookland-grid">
-								{books.map((book) => (
-									<article key={book.id} className="bookland-card">
-										<div className={`bookland-card__cover ${getAccentClass(book.id)}`} style={{ position: 'relative', overflow: 'hidden' }}>
+								{products.map((product) => (
+									<article key={product.id} className="bookland-card">
+										<div className={`bookland-card__cover ${product.accent}`} style={{ position: 'relative', overflow: 'hidden' }}>
 											<div className="bookland-card__coverGlow" style={{ zIndex: 2 }} />
-											{book.imageUrl ? (
+											{product.imageUrl ? (
 												<img
-													src={book.imageUrl}
-													alt={book.title}
+													src={product.imageUrl}
+													alt={product.title}
+													className="bookland-card__image"
+													loading="lazy"
+													onError={(event) => {
+														event.currentTarget.hidden = true;
+													}}
 													style={{
 														position: 'absolute',
 														top: 0,
@@ -253,23 +378,19 @@ export default function ProductAllPage() {
 													}}
 												/>
 											) : null}
-											<div className="bookland-card__coverLabel z-10" style={{ zIndex: 3 }}>BookLand</div>
+											<div className="bookland-card__coverLabel" style={{ zIndex: 3 }}>BookLand</div>
 										</div>
 
 										<div className="bookland-card__body">
 											<div className="bookland-card__meta">
-												<span>{book.categoryName || 'Sách'}</span>
-												<span>★ {book.averageRating || '5.0'}</span>
+												<span>{product.category}</span>
+												<span>★ {product.rating}</span>
 											</div>
-											<h3 className="line-clamp-2 min-h-[48px]">{book.title}</h3>
-											<p className="truncate">{book.authorName || 'Chưa rõ tác giả'}</p>
+											<h3 className="line-clamp-2 min-h-[48px]">{product.title}</h3>
+											<p className="truncate">{product.author}</p>
 											<div className="bookland-card__priceRow">
-												<span className="bookland-card__price">{Number(book.price).toLocaleString()}đ</span>
-												{book.discountPercent ? (
-													<span className="bookland-card__oldPrice">
-														{Number(book.price * (1 + book.discountPercent / 100)).toLocaleString()}đ
-													</span>
-												) : null}
+												<span className="bookland-card__price">{product.price}</span>
+												{product.oldPrice ? <span className="bookland-card__oldPrice">{product.oldPrice}</span> : null}
 											</div>
 										</div>
 									</article>
@@ -277,21 +398,34 @@ export default function ProductAllPage() {
 							</div>
 						)}
 
-						{totalPages > 1 && (
+						{totalPages > 1 ? (
 							<div className="bookland-pagination" aria-label="Phân trang">
-								{Array.from({ length: totalPages }).map((_, index) => (
+								<button
+									type="button"
+									disabled={currentPage === 1}
+									onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+								>
+									{'<'}
+								</button>
+								{getVisiblePages().map((page) => (
 									<button
-										key={index}
+										key={page}
 										type="button"
-										onClick={() => setPage(index)}
-										className={page === index ? "is-active" : ""}
-										style={{ cursor: 'pointer' }}
+										className={currentPage === page ? 'is-active' : ''}
+										onClick={() => setCurrentPage(page)}
 									>
-										{index + 1}
+										{page}
 									</button>
 								))}
+								<button
+									type="button"
+									disabled={currentPage === totalPages}
+									onClick={() => setCurrentPage((page) => Math.min(page + 1, totalPages))}
+								>
+									{'>'}
+								</button>
 							</div>
-						)}
+						) : null}
 					</div>
 				</section>
 			</main>

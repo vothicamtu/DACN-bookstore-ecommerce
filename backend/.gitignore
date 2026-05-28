@@ -27,6 +27,7 @@ build/
 *.zip
 *.tar.gz
 *.rar
+out/
 
 # -------------------------------------------------------------------------
 # IDE / Editor Files (Java-Specific)
@@ -39,7 +40,7 @@ build/
 *.ipr
 *.iws
 .idea/
-/out/
+.vscode/
 
 # -------------------------------------------------------------------------
 # Tools & Crash Logs
@@ -47,3 +48,15 @@ build/
 hs_err_pid*
 replay_pid*
 .attach_pid*
+
+# Logs
+*.log
+*.err.log
+
+# Node
+node_modules/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
