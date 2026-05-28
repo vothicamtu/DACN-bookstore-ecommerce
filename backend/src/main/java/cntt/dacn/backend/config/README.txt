@@ -1,0 +1,2 @@
+- Chứa các class cấu hình cho Spring Boot (CORS, Swagger, v.v.)
+- Khởi tạo bean và cấu hình ứng dụng

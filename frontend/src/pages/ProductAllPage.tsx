@@ -1,7 +1,14 @@
+import { useEffect, useState } from 'react';
+import axiosClient from '../api/axiosClient';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../styles/ProductAllPage.css';
-import { useEffect, useState } from 'react';
+
+interface Category {
+	id: number;
+	categoryName: string;
+	description: string;
+}
 
 type Product = {
 	id: number;
@@ -34,7 +41,6 @@ type ApiProductPage = {
 	totalItems: number;
 };
 
-const categoryFilters = ['Tất cả', 'Văn học', 'Kinh tế', 'Kỹ năng', 'Thiếu nhi', 'Giáo khoa'];
 const PRODUCTS_PER_PAGE = 9;
 
 const sortOptions = [
@@ -77,7 +83,7 @@ function resolveImageUrl(imageUrl?: string | null) {
 function mapProduct(product: ApiProduct, index: number): Product {
 	const discountPercent = product.discountPercent ?? 0;
 	const oldPrice = discountPercent > 0
-		? product.price / (1 - discountPercent / 100)
+		? product.price * (1 + discountPercent / 100)
 		: undefined;
 
 	return {
@@ -95,6 +101,7 @@ function mapProduct(product: ApiProduct, index: number): Product {
 
 export default function ProductAllPage() {
 	const [products, setProducts] = useState<Product[]>([]);
+	const [categories, setCategories] = useState<Category[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 	const [selectedCategory, setSelectedCategory] = useState('Tất cả');
@@ -106,56 +113,81 @@ export default function ProductAllPage() {
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalItems, setTotalItems] = useState(0);
 
+	const [keyword, setKeyword] = useState('');
+	const [appliedKeyword, setAppliedKeyword] = useState('');
+
+	const fetchCategories = async () => {
+		try {
+			const response = await axiosClient.get("/categories");
+			setCategories(response.data);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const handleSearch = () => {
+		setAppliedKeyword(keyword);
+		setCurrentPage(1);
+	};
+
 	useEffect(() => {
-		const controller = new AbortController();
-		const params = new URLSearchParams();
+		fetchCategories();
+	}, []);
+
+	useEffect(() => {
+		let isMounted = true;
+		const params: any = {};
 
 		if (selectedCategory !== 'Tất cả') {
-			params.set('category', selectedCategory);
+			params.category = selectedCategory;
 		}
 
 		if (minPrice) {
-			params.set('minPrice', minPrice);
+			params.minPrice = minPrice;
 		}
 
 		if (maxPrice) {
-			params.set('maxPrice', maxPrice);
+			params.maxPrice = maxPrice;
 		}
 
 		if (minRating > 0) {
-			params.set('minRating', String(minRating));
+			params.minRating = minRating;
 		}
 
-		params.set('sort', sort);
-		params.set('page', String(currentPage - 1));
-		params.set('size', String(PRODUCTS_PER_PAGE));
+		if (appliedKeyword) {
+			params.keyword = appliedKeyword;
+		}
+
+		params.sort = sort;
+		params.page = currentPage - 1;
+		params.size = PRODUCTS_PER_PAGE;
 		setLoading(true);
 
-		fetch(`${API_BASE_URL}/api/products?${params.toString()}`, { signal: controller.signal })
+		axiosClient.get("/products", { params })
 			.then((response) => {
-				if (!response.ok) {
-					throw new Error('Không lấy được danh sách sản phẩm');
+				if (isMounted) {
+					const data = response.data as ApiProductPage;
+					setProducts(data.items.map(mapProduct));
+					setTotalPages(data.totalPages);
+					setTotalItems(data.totalItems);
+					setError('');
 				}
-
-				return response.json() as Promise<ApiProductPage>;
 			})
-			.then((data) => {
-				setProducts(data.items.map(mapProduct));
-				setTotalPages(data.totalPages);
-				setTotalItems(data.totalItems);
-				setError('');
-			})
-			.catch((err: Error) => {
-				if (err.name !== 'AbortError') {
-					setError(err.message);
+			.catch((err: any) => {
+				if (isMounted) {
+					setError(err.message || 'Không lấy được danh sách sản phẩm');
 				}
 			})
 			.finally(() => {
-				setLoading(false);
+				if (isMounted) {
+					setLoading(false);
+				}
 			});
 
-		return () => controller.abort();
-	}, [selectedCategory, minPrice, maxPrice, minRating, sort, currentPage]);
+		return () => {
+			isMounted = false;
+		};
+	}, [selectedCategory, minPrice, maxPrice, minRating, sort, currentPage, appliedKeyword]);
 
 	function resetFilters() {
 		setSelectedCategory('Tất cả');
@@ -164,6 +196,8 @@ export default function ProductAllPage() {
 		setMinRating(0);
 		setSort('popular');
 		setCurrentPage(1);
+		setKeyword('');
+		setAppliedKeyword('');
 	}
 
 	function getVisiblePages() {
@@ -183,7 +217,11 @@ export default function ProductAllPage() {
 
 	return (
 		<div className="bookland-page">
-			<Header />
+			<Header
+				keyword={keyword}
+				setKeyword={setKeyword}
+				onSearch={handleSearch}
+			/>
 
 			<main className="bookland-page__main">
 				<div className="bookland-breadcrumb">Sách mới / Xem thêm</div>
@@ -194,14 +232,21 @@ export default function ProductAllPage() {
 							<div className="bookland-filterGroup">
 								<h2>DANH MỤC</h2>
 								<div className="bookland-chipList">
-									{categoryFilters.map((item) => (
+									<button
+										type="button"
+										className={`bookland-chip ${selectedCategory === 'Tất cả' ? 'is-active' : ''}`}
+										onClick={() => selectCategory('Tất cả')}
+									>
+										Tất cả
+									</button>
+									{categories.map((category) => (
 										<button
-											key={item}
+											key={category.id}
 											type="button"
-											className={`bookland-chip ${selectedCategory === item ? 'is-active' : ''}`}
-											onClick={() => selectCategory(item)}
+											className={`bookland-chip ${selectedCategory === category.categoryName ? 'is-active' : ''}`}
+											onClick={() => selectCategory(category.categoryName)}
 										>
-											{item}
+											{category.categoryName}
 										</button>
 									))}
 								</div>
@@ -216,6 +261,7 @@ export default function ProductAllPage() {
 											type="number"
 											min="0"
 											step="10000"
+											placeholder="Từ (đ)"
 											value={minPrice}
 											onChange={(event) => {
 												setMinPrice(event.target.value);
@@ -229,6 +275,7 @@ export default function ProductAllPage() {
 											type="number"
 											min="0"
 											step="10000"
+											placeholder="Đến (đ)"
 											value={maxPrice}
 											onChange={(event) => {
 												setMaxPrice(event.target.value);
@@ -308,7 +355,8 @@ export default function ProductAllPage() {
 							<div className="bookland-grid">
 								{products.map((product) => (
 									<article key={product.id} className="bookland-card">
-										<div className={`bookland-card__cover ${product.accent}`}>
+										<div className={`bookland-card__cover ${product.accent}`} style={{ position: 'relative', overflow: 'hidden' }}>
+											<div className="bookland-card__coverGlow" style={{ zIndex: 2 }} />
 											{product.imageUrl ? (
 												<img
 													src={product.imageUrl}
@@ -318,10 +366,19 @@ export default function ProductAllPage() {
 													onError={(event) => {
 														event.currentTarget.hidden = true;
 													}}
+													style={{
+														position: 'absolute',
+														top: 0,
+														left: 0,
+														width: '100%',
+														height: '100%',
+														objectFit: 'cover',
+														zIndex: 1,
+														opacity: 0.95
+													}}
 												/>
 											) : null}
-											<div className="bookland-card__coverGlow" />
-											<div className="bookland-card__coverLabel">BookLand</div>
+											<div className="bookland-card__coverLabel" style={{ zIndex: 3 }}>BookLand</div>
 										</div>
 
 										<div className="bookland-card__body">
@@ -329,8 +386,8 @@ export default function ProductAllPage() {
 												<span>{product.category}</span>
 												<span>★ {product.rating}</span>
 											</div>
-											<h3>{product.title}</h3>
-											<p>{product.author}</p>
+											<h3 className="line-clamp-2 min-h-[48px]">{product.title}</h3>
+											<p className="truncate">{product.author}</p>
 											<div className="bookland-card__priceRow">
 												<span className="bookland-card__price">{product.price}</span>
 												{product.oldPrice ? <span className="bookland-card__oldPrice">{product.oldPrice}</span> : null}

@@ -32,6 +32,7 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Float minRating,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "newest") String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size
@@ -40,7 +41,7 @@ public class ProductController {
         int safeSize = Math.min(Math.max(size, 1), 50);
         Pageable pageable = PageRequest.of(safePage, safeSize, buildSort(sort));
         var products = productRepository.findAll(
-                buildSpecification(category, minPrice, maxPrice, minRating),
+                buildSpecification(category, minPrice, maxPrice, minRating, keyword),
                 pageable
         );
         var items = products.getContent()
@@ -63,7 +64,8 @@ public class ProductController {
             String category,
             BigDecimal minPrice,
             BigDecimal maxPrice,
-            Float minRating
+            Float minRating,
+            String keyword
     ) {
         Specification<Book> specification = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
 
@@ -83,7 +85,21 @@ public class ProductController {
             specification = specification.and(ratingGreaterThanOrEqual(minRating));
         }
 
+        if (keyword != null && !keyword.isBlank()) {
+            specification = specification.and(hasKeyword(keyword));
+        }
+
         return specification;
+    }
+
+    private Specification<Book> hasKeyword(String keyword) {
+        return (root, query, criteriaBuilder) -> {
+            String pattern = "%" + keyword.toLowerCase() + "%";
+            return criteriaBuilder.or(
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), pattern),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.join("author").get("authorName")), pattern)
+            );
+        };
     }
 
     private Specification<Book> hasCategory(String category) {

@@ -1,0 +1,125 @@
+# =========================================================================
+# AI Service (Python / Machine Learning) .gitignore
+# =========================================================================
+
+# -------------------------------------------------------------------------
+# Byte-compiled / Optimized / DLL Files
+# -------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.webassets-cache/
+
+# -------------------------------------------------------------------------
+# Virtual Environments
+# -------------------------------------------------------------------------
+.venv/
+venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# -------------------------------------------------------------------------
+# Distribution & Packaging
+# -------------------------------------------------------------------------
+bin/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# -------------------------------------------------------------------------
+# Local & Environment Variables (CRITICAL)
+# -------------------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+.secret
+credentials.json
+
+# -------------------------------------------------------------------------
+# Jupyter Notebooks & Data / Model Checkpoints
+# -------------------------------------------------------------------------
+.ipynb_checkpoints
+*/.ipynb_checkpoints/
+.ipynb/
+checkpoint/
+checkpoints/
+
+# -------------------------------------------------------------------------
+# Machine Learning Datasets & Models (Large Files - Do NOT commit to Git)
+# -------------------------------------------------------------------------
+# Model files (weights, architectures)
+model/*.h5
+model/*.pth
+model/*.pt
+model/*.pkl
+model/*.bin
+model/*.onnx
+model/*.joblib
+model/*.pb
+model/*.weights
+*.h5
+*.pth
+*.pt
+*.pkl
+*.bin
+*.onnx
+*.joblib
+*.pb
+
+# Keep READMEs in model & dataset folders
+!model/README*
+!dataset/README*
+
+# Big dataset files (CSV, JSON datasets, SQLite, pickle files, etc.)
+dataset/*.csv
+dataset/*.json
+dataset/*.xlsx
+dataset/*.parquet
+dataset/*.h5
+dataset/*.npy
+dataset/*.npz
+dataset/*.pkl
+dataset/*.sqlite
+dataset/*.db
+*.csv
+*.xlsx
+*.parquet
+*.npy
+*.npz
+*.sqlite
+*.db
+
+# -------------------------------------------------------------------------
+# Testing & Code Coverage / Linting
+# -------------------------------------------------------------------------
+.pytest_cache/
+.mypy_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.noserc
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.ruamel_yaml_cache/

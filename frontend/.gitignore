@@ -1,0 +1,61 @@
+node_modules/
+/jspm_packages/
+.pnp
+.pnp.js
+.yarn-metadata.xml
+
+# -------------------------------------------------------------------------
+# Build Outputs
+# -------------------------------------------------------------------------
+dist/
+dist-ssr/
+build/
+out/
+.next/
+.nuxt/
+.svelte-kit/
+.parcel-cache/
+.cache/
+
+# -------------------------------------------------------------------------
+# Local & Environment Variables (CRITICAL - Do NOT commit credentials)
+# -------------------------------------------------------------------------
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env.local
+
+# -------------------------------------------------------------------------
+# Logs
+# -------------------------------------------------------------------------
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# -------------------------------------------------------------------------
+# Diagnostic / Cache / Testing Files
+# -------------------------------------------------------------------------
+.eslintcache
+.stylelintcache
+.prettiercache
+.nyc_output/
+coverage/
+.jest/
+.mocha-ts/
+.tap/
+.nyc-output/
+
+# -------------------------------------------------------------------------
+# IDE / Text Editor Configurations
+# -------------------------------------------------------------------------
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
