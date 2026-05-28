@@ -1,4 +1,4 @@
-package dacn.cntt.backend.dto.request;
+package cntt.dacn.backend.dto.request;
 
 import cntt.dacn.backend.entity.OrderStatus;
 import jakarta.validation.constraints.NotNull;

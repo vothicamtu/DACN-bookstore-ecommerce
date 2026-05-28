@@ -7,7 +7,7 @@ import cntt.dacn.backend.exception.ResourceNotFoundException;
 import cntt.dacn.backend.repository.BookRepository;
 import cntt.dacn.backend.service.BookService;
 import cntt.dacn.backend.specification.BookSpecification;
-import cntt.dacn.backend.util.MapperUtil;
+import cntt.dacn.backend.mapper.MapperUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;

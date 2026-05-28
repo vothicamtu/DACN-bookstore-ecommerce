@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import cntt.dacn.backend.service.impl.UserDetailsImpl;
 
 import java.security.Key;
 import java.util.Date;

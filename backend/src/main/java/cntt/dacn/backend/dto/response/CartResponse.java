@@ -1,4 +1,4 @@
-package dacn.cntt.backend.dto.response;
+package cntt.dacn.backend.dto.response;
 
 import lombok.*;
 

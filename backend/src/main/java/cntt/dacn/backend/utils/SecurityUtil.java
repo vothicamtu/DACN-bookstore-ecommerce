@@ -1,6 +1,6 @@
 package cntt.dacn.backend.util;
 
-import cntt.dacn.backend.security.UserDetailsImpl;
+import cntt.dacn.backend.service.impl.UserDetailsImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 

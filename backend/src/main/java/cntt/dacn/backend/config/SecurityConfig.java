@@ -1,7 +1,7 @@
 package cntt.dacn.backend.config;
 
 import cntt.dacn.backend.security.JwtAuthenticationFilter;
-import cntt.dacn.backend.security.UserDetailsServiceImpl;
+import cntt.dacn.backend.service.impl.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,9 +49,10 @@ public class SecurityConfig {
                                 "/api/auth/**"
                         ).permitAll()
 
-                        // Public book APIs
+                        // Public book and category APIs
                         .requestMatchers(
-                                "/api/books/**"
+                                "/api/books/**",
+                                "/api/categories/**"
                         ).permitAll()
 
                         // Admin APIs

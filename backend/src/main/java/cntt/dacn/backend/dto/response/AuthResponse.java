@@ -1,4 +1,4 @@
-package dacn.cntt.backend.dto.response;
+package cntt.dacn.backend.dto.response;
 
 import cntt.dacn.backend.entity.Role;
 import lombok.*;
@@ -12,6 +12,7 @@ public class AuthResponse {
 
     private String token;
 
+    @Builder.Default
     private String type = "Bearer";
 
     private Long userId;
