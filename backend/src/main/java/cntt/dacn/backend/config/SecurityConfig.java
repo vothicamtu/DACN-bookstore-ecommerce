@@ -52,7 +52,8 @@ public class SecurityConfig {
                         // Public book and category APIs
                         .requestMatchers(
                                 "/api/books/**",
-                                "/api/categories/**"
+                                "/api/categories/**",
+                                "/api/products/**"
                         ).permitAll()
 
                         // Admin APIs
