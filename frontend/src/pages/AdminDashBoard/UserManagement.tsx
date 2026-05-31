@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Search, Plus, Edit2, Trash2, Eye, EyeOff} from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
-import './UserManagement.css';
+import "../../styles/UserManagement.css";
 
 interface User {
     id: number;

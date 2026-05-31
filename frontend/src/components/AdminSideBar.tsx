@@ -1,6 +1,6 @@
 import React from 'react';
 import { LayoutDashboard, Users, BookOpen, ShoppingBag, BarChart3, Settings } from 'lucide-react';
-import './AdminSidebar.css';
+import "../../styles/AdminSideBar.css";
 
 interface AdminSidebarProps {
     isOpen: boolean;

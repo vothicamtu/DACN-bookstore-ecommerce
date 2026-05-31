@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Menu, X, LogOut, Settings } from 'lucide-react';
 import AdminSidebar from './AdminSideBar';
-import './AdminLayout.css';
+import "../../styles/AdminLayout.css";
 
 interface AdminLayoutProps {
     children: React.ReactNode;
