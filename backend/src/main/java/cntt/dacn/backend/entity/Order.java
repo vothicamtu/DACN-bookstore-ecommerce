@@ -1,7 +1,23 @@
 package cntt.dacn.backend.entity;
 
-import jakarta.persistence.*;
-import lombok.Data;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,8 +25,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
 @Table(name = "orders")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Order {
 
     @Id
@@ -21,30 +41,32 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "total_price", precision = 12, scale = 2)
-    private BigDecimal totalPrice;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<OrderItem> orderItems = new ArrayList<>();
 
-    @Column(name = "shipping_address", columnDefinition = "TEXT")
-    private String shippingAddress;
-
-    @Column(name = "payment_method")
-    private String paymentMethod;
+    @Column(nullable = false)
+    private BigDecimal totalAmount;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "order_status")
-    private OrderStatus orderStatus = OrderStatus.PENDING;
+    private OrderStatus status;
 
-    @Column(name = "created_at", updatable = false)
+    private String shippingAddress;
+
+    private String paymentMethod;
+
+    private String phoneNumber;
+
+    private String note;
+
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "order")
-    private List<OrderItem> items = new ArrayList<>();
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
 
-    public enum OrderStatus {
-        PENDING,
-        CONFIRMED,
-        SHIPPING,
-        COMPLETED,
-        CANCELLED
+        if (status == null) {
+            status = OrderStatus.PENDING;
+        }
     }
 }

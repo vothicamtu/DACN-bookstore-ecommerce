@@ -31,6 +31,7 @@ public class ProductService {
             BigDecimal minPrice,
             BigDecimal maxPrice,
             Float minRating,
+            String keyword,
             String sort,
             int page,
             int size
@@ -39,7 +40,7 @@ public class ProductService {
         int safeSize = Math.min(Math.max(size, 1), 50);
         Pageable pageable = PageRequest.of(safePage, safeSize, buildSort(sort));
         Page<Book> products = productRepository.findAll(
-                buildSpecification(category, minPrice, maxPrice, minRating),
+                buildSpecification(category, minPrice, maxPrice, minRating, keyword),
                 pageable
         );
         List<ProductResponse> items = new ArrayList<>();
@@ -89,7 +90,8 @@ public class ProductService {
             String category,
             BigDecimal minPrice,
             BigDecimal maxPrice,
-            Float minRating
+            Float minRating,
+            String keyword
     ) {
         Specification<Book> specification = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
 
@@ -109,7 +111,21 @@ public class ProductService {
             specification = specification.and(ratingGreaterThanOrEqual(minRating));
         }
 
+        if (keyword != null && !keyword.isBlank()) {
+            specification = specification.and(hasKeyword(keyword));
+        }
+
         return specification;
+    }
+
+    private Specification<Book> hasKeyword(String keyword) {
+        return (root, query, criteriaBuilder) -> {
+            String pattern = "%" + keyword.toLowerCase() + "%";
+            return criteriaBuilder.or(
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), pattern),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.join("author").get("authorName")), pattern)
+            );
+        };
     }
 
     private Specification<Book> hasCategory(String category) {
@@ -139,6 +155,14 @@ public class ProductService {
 
         if ("priceDesc".equals(sort)) {
             return Sort.by(Sort.Direction.DESC, "price");
+        }
+
+        if ("bestseller".equals(sort)) {
+            return Sort.by(Sort.Direction.DESC, "soldCount");
+        }
+
+        if ("newest".equals(sort)) {
+            return Sort.by(Sort.Direction.DESC, "publishDate");
         }
 
         if ("ratingDesc".equals(sort) || "popular".equals(sort)) {

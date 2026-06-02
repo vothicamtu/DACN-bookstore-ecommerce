@@ -1,7 +1,17 @@
-import Header from '../components/Header';
+import { ChevronDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import axiosClient from '../api/axiosClient';
+import Header, { type HeaderCategory, type HeaderNavKey } from '../components/Header';
 import Footer from '../components/Footer';
 import '../styles/ProductAllPage.css';
-import { useEffect, useRef, useState } from 'react';
+import { addToCart } from '../services/cartService';
+
+interface Category {
+	id: number;
+	categoryName: string;
+	description: string;
+}
 
 type Product = {
 	id: number;
@@ -34,11 +44,10 @@ type ApiProductPage = {
 	totalItems: number;
 };
 
-const categoryFilters = ['Tất cả', 'Văn học', 'Kinh tế', 'Kỹ năng', 'Thiếu nhi', 'Giáo khoa'];
 const PRODUCTS_PER_PAGE = 9;
 
 const sortOptions = [
-	{ label: 'Bán chạy nhất', value: 'popular' },
+	{ label: 'Bán chạy nhất', value: 'bestseller' },
 	{ label: 'Mới nhất', value: 'newest' },
 	{ label: 'Giá tăng dần', value: 'priceAsc' },
 	{ label: 'Giá giảm dần', value: 'priceDesc' },
@@ -77,7 +86,7 @@ function resolveImageUrl(imageUrl?: string | null) {
 function mapProduct(product: ApiProduct, index: number): Product {
 	const discountPercent = product.discountPercent ?? 0;
 	const oldPrice = discountPercent > 0
-		? product.price / (1 - discountPercent / 100)
+		? product.price * (1 + discountPercent / 100)
 		: undefined;
 
 	return {
@@ -94,90 +103,217 @@ function mapProduct(product: ApiProduct, index: number): Product {
 }
 
 export default function ProductAllPage() {
+	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
 	const [products, setProducts] = useState<Product[]>([]);
+	const [categories, setCategories] = useState<Category[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 	const [selectedCategory, setSelectedCategory] = useState('Tất cả');
 	const [minPrice, setMinPrice] = useState('');
 	const [maxPrice, setMaxPrice] = useState('');
 	const [minRating, setMinRating] = useState(0);
-	const [sort, setSort] = useState('popular');
-	const [isSortOpen, setIsSortOpen] = useState(false);
+	const [sort, setSort] = useState('');
+	const [sortMenuOpen, setSortMenuOpen] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalItems, setTotalItems] = useState(0);
-	const sortDropdownRef = useRef<HTMLDivElement>(null);
-	const selectedSortLabel = sortOptions.find((option) => option.value === sort)?.label ?? 'Sắp xếp';
+	const [addingCartId, setAddingCartId] = useState<number | null>(null);
+	const [cartMessage, setCartMessage] = useState('');
+	const [cartErrorProductId, setCartErrorProductId] = useState<number | null>(null);
+	const [loginPromptOpen, setLoginPromptOpen] = useState(false);
+
+	const [keyword, setKeyword] = useState('');
+	const [appliedKeyword, setAppliedKeyword] = useState('');
+	const categoryQuery = searchParams.get('category') ?? '';
+	const sortQuery = searchParams.get('sort') ?? '';
+	const headerCategories: HeaderCategory[] = categories.map((category) => ({
+		label: category.categoryName,
+		value: category.categoryName,
+	}));
+	const activeCategoryValue =
+		categories.find((category) => category.categoryName === categoryQuery)?.categoryName ?? categoryQuery;
+	const activeNav: HeaderNavKey = categoryQuery
+		? 'category'
+		: sortQuery === 'bestseller'
+			? 'bestseller'
+			: sortQuery === 'newest'
+				? 'newest'
+				: 'store';
+	const selectedSortLabel =
+		sortOptions.find((option) => option.value === sort)?.label ?? 'Sắp xếp';
+
+	const fetchCategories = async () => {
+		try {
+			const response = await axiosClient.get("/categories");
+			setCategories(response.data);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const handleSearch = () => {
+		setAppliedKeyword(keyword);
+		setCurrentPage(1);
+	};
+
+	function resetBookFilters() {
+		setSelectedCategory('Tất cả');
+		setMinPrice('');
+		setMaxPrice('');
+		setMinRating(0);
+		setSort('');
+		setCurrentPage(1);
+		setCartMessage('');
+		setCartErrorProductId(null);
+	}
+
+	function goToBooks(params: Record<string, string> = {}) {
+		const nextParams = new URLSearchParams(params);
+		const search = nextParams.toString();
+		navigate({
+			pathname: '/books',
+			search: search ? `?${search}` : '',
+		});
+	}
+
+	function buildBookParams(overrides: Record<string, string> = {}) {
+		const params: Record<string, string> = {};
+
+		if (categoryQuery) {
+			params.category = categoryQuery;
+		}
+
+		if (sortQuery) {
+			params.sort = sortQuery;
+		}
+
+		Object.entries(overrides).forEach(([key, value]) => {
+			if (value) {
+				params[key] = value;
+			} else {
+				delete params[key];
+			}
+		});
+
+		return params;
+	}
+
+	function handleStoreClick() {
+		resetBookFilters();
+		setKeyword('');
+		setAppliedKeyword('');
+		goToBooks();
+	}
+
+	function handleMenuCategorySelect(category: string) {
+		resetBookFilters();
+		goToBooks({ category });
+	}
+
+	function handleBestSellerClick() {
+		resetBookFilters();
+		setSort('bestseller');
+		goToBooks({ sort: 'bestseller' });
+	}
+
+	function handleNewestClick() {
+		resetBookFilters();
+		setSort('newest');
+		goToBooks({ sort: 'newest' });
+	}
 
 	useEffect(() => {
-		const controller = new AbortController();
-		const params = new URLSearchParams();
+		fetchCategories();
+	}, []);
 
-		if (selectedCategory !== 'Tất cả') {
-			params.set('category', selectedCategory);
+	useEffect(() => {
+		if (categoryQuery) {
+			const matchedCategory = categories.find((category) => category.categoryName === categoryQuery);
+			setSelectedCategory(matchedCategory?.categoryName ?? categoryQuery);
+		} else {
+			setSelectedCategory('Tất cả');
+		}
+
+		if (sortQuery === 'bestseller' || sortQuery === 'newest' || sortQuery === 'priceAsc' || sortQuery === 'priceDesc') {
+			setSort(sortQuery);
+		} else if (!sortQuery) {
+			setSort('');
+		}
+
+		setCurrentPage(1);
+	}, [categories, categoryQuery, sortQuery]);
+
+	useEffect(() => {
+		let isMounted = true;
+		const params: any = {};
+
+		if (categoryQuery) {
+			params.category = categoryQuery;
+		} else if (selectedCategory !== 'Tất cả') {
+			params.category = selectedCategory;
 		}
 
 		if (minPrice) {
-			params.set('minPrice', minPrice);
+			params.minPrice = minPrice;
 		}
 
 		if (maxPrice) {
-			params.set('maxPrice', maxPrice);
+			params.maxPrice = maxPrice;
 		}
 
 		if (minRating > 0) {
-			params.set('minRating', String(minRating));
+			params.minRating = minRating;
 		}
 
-		params.set('sort', sort);
-		params.set('page', String(currentPage - 1));
-		params.set('size', String(PRODUCTS_PER_PAGE));
+		if (appliedKeyword) {
+			params.keyword = appliedKeyword;
+		}
+
+		const effectiveSort = sortQuery || sort;
+		if (effectiveSort) {
+			params.sort = effectiveSort;
+		}
+		params.page = currentPage - 1;
+		params.size = PRODUCTS_PER_PAGE;
 		setLoading(true);
 
-		fetch(`${API_BASE_URL}/api/products?${params.toString()}`, { signal: controller.signal })
+		axiosClient.get("/products", { params })
 			.then((response) => {
-				if (!response.ok) {
-					throw new Error('Không lấy được danh sách sản phẩm');
+				if (isMounted) {
+					const data = response.data as ApiProductPage;
+					setProducts(data.items.map(mapProduct));
+					setTotalPages(data.totalPages);
+					setTotalItems(data.totalItems);
+					setError('');
 				}
-
-				return response.json() as Promise<ApiProductPage>;
 			})
-			.then((data) => {
-				setProducts(data.items.map(mapProduct));
-				setTotalPages(data.totalPages);
-				setTotalItems(data.totalItems);
-				setError('');
-			})
-			.catch((err: Error) => {
-				if (err.name !== 'AbortError') {
-					setError(err.message);
+			.catch((err: any) => {
+				if (isMounted) {
+					setError(err.message || 'Không lấy được danh sách sản phẩm');
 				}
 			})
 			.finally(() => {
-				setLoading(false);
+				if (isMounted) {
+					setLoading(false);
+				}
 			});
 
-		return () => controller.abort();
-	}, [selectedCategory, minPrice, maxPrice, minRating, sort, currentPage]);
-
-	useEffect(() => {
-		function handlePointerDown(event: MouseEvent) {
-			if (!sortDropdownRef.current?.contains(event.target as Node)) {
-				setIsSortOpen(false);
-			}
-		}
-
-		document.addEventListener('mousedown', handlePointerDown);
-		return () => document.removeEventListener('mousedown', handlePointerDown);
-	}, []);
+		return () => {
+			isMounted = false;
+		};
+	}, [selectedCategory, categoryQuery, minPrice, maxPrice, minRating, sort, sortQuery, currentPage, appliedKeyword]);
 
 	function resetFilters() {
 		setSelectedCategory('Tất cả');
 		setMinPrice('');
 		setMaxPrice('');
 		setMinRating(0);
-		setSort('popular');
+		setSort('');
 		setCurrentPage(1);
+		setKeyword('');
+		setAppliedKeyword('');
+		goToBooks();
 	}
 
 	function getVisiblePages() {
@@ -192,12 +328,49 @@ export default function ProductAllPage() {
 			setMinPrice('');
 			setMaxPrice('');
 			setMinRating(0);
+			goToBooks(buildBookParams({ category: '' }));
+		} else {
+			goToBooks(buildBookParams({ category }));
+		}
+	}
+
+	function selectSort(nextSort: string) {
+		setSort(nextSort);
+		setCurrentPage(1);
+		setSortMenuOpen(false);
+		goToBooks(buildBookParams({ sort: nextSort }));
+	}
+
+	async function handleAddToCart(productId: number) {
+		setAddingCartId(productId);
+		setCartMessage('');
+		setCartErrorProductId(null);
+
+		try {
+			await addToCart(productId, 1);
+			setCartMessage('Đã thêm sản phẩm vào giỏ hàng.');
+		} catch {
+			setCartErrorProductId(productId);
+			setLoginPromptOpen(true);
+		} finally {
+			setAddingCartId(null);
 		}
 	}
 
 	return (
 		<div className="bookland-page">
-			<Header />
+			<Header
+				keyword={keyword}
+				setKeyword={setKeyword}
+				onSearch={handleSearch}
+				activeNav={activeNav}
+				activeCategory={activeCategoryValue}
+				categories={headerCategories}
+				onStoreClick={handleStoreClick}
+				onCategorySelect={handleMenuCategorySelect}
+				onBestSellerClick={handleBestSellerClick}
+				onNewestClick={handleNewestClick}
+			/>
 
 			<main className="bookland-page__main">
 				<div className="bookland-breadcrumb">Sách mới / Xem thêm</div>
@@ -208,14 +381,21 @@ export default function ProductAllPage() {
 							<div className="bookland-filterGroup">
 								<h2>DANH MỤC</h2>
 								<div className="bookland-chipList">
-									{categoryFilters.map((item) => (
+									<button
+										type="button"
+										className={`bookland-chip ${selectedCategory === 'Tất cả' ? 'is-active' : ''}`}
+										onClick={() => selectCategory('Tất cả')}
+									>
+										Tất cả
+									</button>
+									{categories.map((category) => (
 										<button
-											key={item}
+											key={category.id}
 											type="button"
-											className={`bookland-chip ${selectedCategory === item ? 'is-active' : ''}`}
-											onClick={() => selectCategory(item)}
+											className={`bookland-chip ${selectedCategory === category.categoryName ? 'is-active' : ''}`}
+											onClick={() => selectCategory(category.categoryName)}
 										>
-											{item}
+											{category.categoryName}
 										</button>
 									))}
 								</div>
@@ -230,6 +410,7 @@ export default function ProductAllPage() {
 											type="number"
 											min="0"
 											step="10000"
+											placeholder="Từ (đ)"
 											value={minPrice}
 											onChange={(event) => {
 												setMinPrice(event.target.value);
@@ -243,6 +424,7 @@ export default function ProductAllPage() {
 											type="number"
 											min="0"
 											step="10000"
+											placeholder="Đến (đ)"
 											value={maxPrice}
 											onChange={(event) => {
 												setMaxPrice(event.target.value);
@@ -285,32 +467,25 @@ export default function ProductAllPage() {
 
 							<div className="bookland-filterGroup">
 								<h2>SẮP XẾP</h2>
-								<div className="bookland-sortSelect" ref={sortDropdownRef}>
+								<div className="bookland-sortMenu">
 									<button
 										type="button"
-										className="bookland-sortSelect__button"
-										aria-haspopup="listbox"
-										aria-expanded={isSortOpen}
-										onClick={() => setIsSortOpen((open) => !open)}
+										className="bookland-sortMenu__button"
+										aria-expanded={sortMenuOpen}
+										onClick={() => setSortMenuOpen((open) => !open)}
 									>
 										<span>{selectedSortLabel}</span>
-										<span className="bookland-sortSelect__chevron" aria-hidden="true" />
+										<ChevronDown className="bookland-sortMenu__icon" aria-hidden="true" />
 									</button>
 
-									{isSortOpen ? (
-										<div className="bookland-sortSelect__menu" role="listbox">
+									{sortMenuOpen ? (
+										<div className="bookland-sortMenu__list">
 											{sortOptions.map((option) => (
 												<button
 													key={option.value}
 													type="button"
-													className={`bookland-sortSelect__option ${sort === option.value ? 'is-selected' : ''}`}
-													role="option"
-													aria-selected={sort === option.value}
-													onClick={() => {
-														setSort(option.value);
-														setCurrentPage(1);
-														setIsSortOpen(false);
-													}}
+													className={`bookland-sortMenu__item ${sort === option.value ? 'is-active' : ''}`}
+													onClick={() => selectSort(option.value)}
 												>
 													{option.label}
 												</button>
@@ -327,6 +502,12 @@ export default function ProductAllPage() {
 					</aside>
 
 					<div className="bookland-content">
+						{cartMessage ? (
+							<div className="bookland-cartMessage">
+								{cartMessage}
+							</div>
+						) : null}
+
 						<div className="bookland-resultSummary">
 							{totalItems > 0 ? `Hiển thị ${products.length} / ${totalItems} sản phẩm` : 'Không có sản phẩm phù hợp'}
 						</div>
@@ -341,7 +522,8 @@ export default function ProductAllPage() {
 							<div className="bookland-grid">
 								{products.map((product) => (
 									<article key={product.id} className="bookland-card">
-										<div className={`bookland-card__cover ${product.accent}`}>
+										<div className={`bookland-card__cover ${product.accent}`} style={{ position: 'relative', overflow: 'hidden' }}>
+											<div className="bookland-card__coverGlow" style={{ zIndex: 2 }} />
 											{product.imageUrl ? (
 												<img
 													src={product.imageUrl}
@@ -351,10 +533,19 @@ export default function ProductAllPage() {
 													onError={(event) => {
 														event.currentTarget.hidden = true;
 													}}
+													style={{
+														position: 'absolute',
+														top: 0,
+														left: 0,
+														width: '100%',
+														height: '100%',
+														objectFit: 'cover',
+														zIndex: 1,
+														opacity: 0.95
+													}}
 												/>
 											) : null}
-											<div className="bookland-card__coverGlow" />
-											<div className="bookland-card__coverLabel">BookLand</div>
+											<div className="bookland-card__coverLabel" style={{ zIndex: 3 }}>BookLand</div>
 										</div>
 
 										<div className="bookland-card__body">
@@ -362,12 +553,26 @@ export default function ProductAllPage() {
 												<span>{product.category}</span>
 												<span>★ {product.rating}</span>
 											</div>
-											<h3>{product.title}</h3>
-											<p>{product.author}</p>
+											<h3 className="line-clamp-2 min-h-[48px]">{product.title}</h3>
+											<p className="truncate">{product.author}</p>
 											<div className="bookland-card__priceRow">
 												<span className="bookland-card__price">{product.price}</span>
 												{product.oldPrice ? <span className="bookland-card__oldPrice">{product.oldPrice}</span> : null}
 											</div>
+											<button
+												type="button"
+												className="bookland-filterReset bookland-card__cartButton"
+												style={{ width: '100%', marginTop: '14px' }}
+												disabled={addingCartId === product.id}
+												onClick={() => handleAddToCart(product.id)}
+											>
+												{addingCartId === product.id ? 'Đang thêm...' : 'Thêm vào giỏ'}
+											</button>
+											{cartErrorProductId === product.id ? (
+												<p className="bookland-cartError">
+													Vui lòng đăng nhập để thêm vào giỏ hàng.
+												</p>
+											) : null}
 										</div>
 									</article>
 								))}
@@ -405,6 +610,21 @@ export default function ProductAllPage() {
 					</div>
 				</section>
 			</main>
+
+			{loginPromptOpen ? (
+				<div className="bookland-loginPrompt" role="dialog" aria-modal="true" aria-labelledby="loginPromptTitle">
+					<div className="bookland-loginPrompt__panel">
+						<h2 id="loginPromptTitle">Cần đăng nhập</h2>
+						<p>Bạn cần đăng nhập trước khi thêm sách vào giỏ hàng.</p>
+						<div className="bookland-loginPrompt__actions">
+							<button type="button" onClick={() => setLoginPromptOpen(false)}>
+								Đóng
+							</button>
+							<a href="/login">Đăng nhập</a>
+						</div>
+					</div>
+				</div>
+			) : null}
 
 			<Footer />
 		</div>

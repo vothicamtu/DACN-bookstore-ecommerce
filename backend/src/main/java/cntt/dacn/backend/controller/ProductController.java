@@ -26,10 +26,20 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Float minRating,
-            @RequestParam(defaultValue = "newest") String sort,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "") String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size
     ) {
-        return productService.getProducts(category, minPrice, maxPrice, minRating, sort, page, size);
+        return productService.getProducts(
+                category,
+                minPrice,
+                maxPrice,
+                minRating,
+                keyword,
+                sort,
+                page,
+                size
+        );
     }
 }
