@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { Eye, PencilLine } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../styles/OrderHistoryPage.css';
 
 type ApiOrder = {
-  id: number;
-  totalPrice: number;
-  orderStatus: string;
+  id?: number | null;
+  orderId?: number | null;
+  totalAmount?: number | null;
+  orderStatus?: string | null;
+  status?: string | null;
   createdAt: string;
 };
 
@@ -34,8 +38,16 @@ const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
   year: 'numeric',
 });
 
-function formatOrderCode(id: number) {
-  return `#BL${String(id).padStart(5, '0')}`;
+function getOrderId(order: ApiOrder) {
+  return order.id ?? order.orderId ?? 0;
+}
+
+function getOrderTotal(order: ApiOrder) {
+  return order.totalAmount ?? order.totalAmount ?? 0;
+}
+
+function getOrderStatus(order: ApiOrder) {
+  return order.orderStatus ?? order.status ?? 'PENDING';
 }
 
 function formatOrderDate(date: string) {
@@ -44,7 +56,7 @@ function formatOrderDate(date: string) {
 
 function getStatusInfo(status: string) {
   switch (status) {
-    case 'COMPLETED':
+    case 'DELIVERED':
       return { label: 'ĐÃ GIAO', className: 'badge-success' };
     case 'CANCELLED':
       return { label: 'ĐÃ HỦY', className: 'badge-cancel' };
@@ -147,17 +159,25 @@ const OrderHistoryPage: React.FC = () => {
               </thead>
               <tbody>
                 {orders.map((order) => {
-                  const status = getStatusInfo(order.orderStatus);
+                  const orderStatus = getOrderStatus(order);
+                  const status = getStatusInfo(orderStatus);
+                  const orderId = getOrderId(order);
 
                   return (
-                    <tr key={order.id}>
-                      <td>{formatOrderCode(order.id)}</td>
+                    <tr key={orderId}>
+                      <td>{(orderId)}</td>
                       <td>{formatOrderDate(order.createdAt)}</td>
-                      <td>{currencyFormatter.format(order.totalPrice)}</td>
+                      <td>{currencyFormatter.format(getOrderTotal(order))}</td>
                       <td><span className={`badge ${status.className}`}>{status.label}</span></td>
                       <td className="actions">
-                        <button className="action-btn" disabled={order.orderStatus !== 'COMPLETED'}>Đánh giá</button>
-                        <button className="action-btn secondary">Chi tiết</button>
+                        <button className="action-btn" disabled={orderStatus !== 'DELIVERED'}>
+                          <PencilLine className="action-btn__icon" aria-hidden="true" />
+                          <span>Đánh giá</span>
+                        </button>
+                        <Link to={`/orders/${orderId}`} className="action-btn secondary">
+                          <Eye className="action-btn__icon" aria-hidden="true" />
+                          <span>Chi tiết</span>
+                        </Link>
                       </td>
                     </tr>
                   );

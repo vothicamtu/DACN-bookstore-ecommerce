@@ -21,64 +21,64 @@ public class MapperUtil {
 
     public static BookResponse mapToBookResponse( Book book) {
 
-    return BookResponse.builder()
+        return BookResponse.builder()
 
-            .id(book.getId())
+                .id(book.getId())
 
-            .title(book.getTitle())
+                .title(book.getTitle())
 
-            .imageUrl(book.getImageUrl())
+                .imageUrl(book.getImageUrl())
 
-            .description(book.getDescription())
+                .description(book.getDescription())
 
-            .price(book.getPrice())
+                .price(book.getPrice())
 
-            .discountPercent(
-                    book.getDiscountPercent()
-            )
+                .discountPercent(
+                        book.getDiscountPercent()
+                )
 
-            .stock(book.getStock())
+                .stock(book.getStock())
 
-            .translator(book.getTranslator())
+                .translator(book.getTranslator())
 
-            .pageCount(book.getPageCount())
+                .pageCount(book.getPageCount())
 
-            .size(book.getSize())
+                .size(book.getSize())
 
-            .publishDate(book.getPublishDate())
+                .publishDate(book.getPublishDate())
 
-            .averageRating(
-                    book.getAverageRating()
-            )
+                .averageRating(
+                        book.getAverageRating()
+                )
 
-            .soldCount(book.getSoldCount())
+                .soldCount(book.getSoldCount())
 
-            .categoryName(
+                .categoryName(
 
-                    book.getCategory() != null
-                            ? book.getCategory()
-                            .getCategoryName()
-                            : null
-            )
+                        book.getCategory() != null
+                                ? book.getCategory()
+                                  .getCategoryName()
+                                : null
+                )
 
-            .authorName(
+                .authorName(
 
-                    book.getAuthor() != null
-                            ? book.getAuthor()
-                            .getAuthorName()
-                            : null
-            )
+                        book.getAuthor() != null
+                                ? book.getAuthor()
+                                  .getAuthorName()
+                                : null
+                )
 
-            .publisherName(
+                .publisherName(
 
-                    book.getPublisher() != null
-                            ? book.getPublisher()
-                            .getPublisherName()
-                            : null
-            )
+                        book.getPublisher() != null
+                                ? book.getPublisher()
+                                  .getPublisherName()
+                                : null
+                )
 
-            .build();
-}
+                .build();
+    }
 
     public static CartItemResponse mapToCartItemResponse(
             CartItem cartItem
@@ -142,10 +142,8 @@ public class MapperUtil {
 
         return OrderItemResponse.builder()
                 .orderItemId(orderItem.getId())
-                .id(orderItem.getId())
                 .bookId(orderItem.getBook().getId())
                 .title(orderItem.getBook().getTitle())
-                .bookTitle(orderItem.getBook().getTitle())
                 .imageUrl(orderItem.getBook().getImageUrl())
                 .quantity(orderItem.getQuantity())
                 .price(orderItem.getPrice())
@@ -165,18 +163,11 @@ public class MapperUtil {
 
         return OrderResponse.builder()
                 .orderId(order.getId())
-                .id(order.getId())
-                .userId(order.getUser() != null ? order.getUser().getId() : null)
-                .username(order.getUser() != null ? order.getUser().getUsername() : null)
-                .customerName(order.getUser() != null ? order.getUser().getFullName() : null)
-                .customerEmail(order.getUser() != null ? order.getUser().getEmail() : null)
+                .username(order.getUser().getUsername())
                 .items(items)
                 .totalAmount(order.getTotalAmount())
-                .totalPrice(order.getTotalAmount())
                 .status(order.getStatus())
-                .orderStatus(order.getStatus() != null ? order.getStatus().name() : null)
                 .shippingAddress(order.getShippingAddress())
-                .paymentMethod(order.getPaymentMethod())
                 .phoneNumber(order.getPhoneNumber())
                 .note(order.getNote())
                 .createdAt(order.getCreatedAt())
