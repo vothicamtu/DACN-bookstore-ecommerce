@@ -33,7 +33,7 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Float minRating,
             @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "newest") String sort,
+            @RequestParam(defaultValue = "") String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size
     ) {
@@ -126,8 +126,10 @@ public class ProductController {
         return switch (sort) {
             case "priceAsc" -> Sort.by(Sort.Direction.ASC, "price");
             case "priceDesc" -> Sort.by(Sort.Direction.DESC, "price");
-            case "ratingDesc", "popular" -> Sort.by(Sort.Direction.DESC, "averageRating");
-            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+            case "bestseller", "popular" -> Sort.by(Sort.Direction.DESC, "soldCount");
+            case "newest" -> Sort.by(Sort.Direction.DESC, "publishDate");
+            case "ratingDesc" -> Sort.by(Sort.Direction.DESC, "averageRating");
+            default -> Sort.by(Sort.Direction.ASC, "id");
         };
     }
 }

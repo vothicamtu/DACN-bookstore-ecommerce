@@ -28,29 +28,46 @@ public class BookServiceImpl implements BookService {
     @Override
     public PagedResponse<BookResponse> getAllBooks(
 
+            String category,
+
+            Long categoryId,
+
+            String keyword,
+
+            BigDecimal minPrice,
+
+            BigDecimal maxPrice,
+
+            Float minRating,
+
+            String sort,
+
             int page,
 
-            int size,
-
-            String sortBy,
-
-            String sortDir
+            int size
     ) {
-
-        Sort sort =
-                sortDir.equalsIgnoreCase("desc")
-                        ? Sort.by(sortBy).descending()
-                        : Sort.by(sortBy).ascending();
 
         Pageable pageable =
                 PageRequest.of(
-                        page,
-                        size,
-                        sort
+                        Math.max(page, 0),
+                        Math.min(Math.max(size, 1), 50),
+                        buildMenuSort(sort)
                 );
 
         Page<Book> books =
-                bookRepository.findAll(pageable);
+                bookRepository.findAll(
+                        BookSpecification.filterByCategoryId(categoryId)
+                                .and(BookSpecification.filterByCategory(category))
+                                .and(
+                                        BookSpecification.filterBooks(
+                                                keyword,
+                                                minPrice,
+                                                maxPrice,
+                                                minRating
+                                        )
+                                ),
+                        pageable
+                );
 
         List<BookResponse> content =
                 books.getContent()
@@ -78,6 +95,30 @@ public class BookServiceImpl implements BookService {
                 .last(books.isLast())
 
                 .build();
+    }
+
+    private Sort buildMenuSort(String sort) {
+        if ("bestseller".equalsIgnoreCase(sort) || "popular".equalsIgnoreCase(sort)) {
+            return Sort.by(Sort.Direction.DESC, "soldCount");
+        }
+
+        if ("newest".equalsIgnoreCase(sort)) {
+            return Sort.by(Sort.Direction.DESC, "publishDate");
+        }
+
+        if ("priceAsc".equalsIgnoreCase(sort)) {
+            return Sort.by(Sort.Direction.ASC, "price");
+        }
+
+        if ("priceDesc".equalsIgnoreCase(sort)) {
+            return Sort.by(Sort.Direction.DESC, "price");
+        }
+
+        if ("ratingDesc".equalsIgnoreCase(sort)) {
+            return Sort.by(Sort.Direction.DESC, "averageRating");
+        }
+
+        return Sort.by(Sort.Direction.ASC, "id");
     }
 
 

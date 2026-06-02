@@ -36,6 +36,8 @@ public class BookResponse {
 
     private Float averageRating;
 
+    private Integer soldCount;
+
     private String categoryName;
 
     private String authorName;
