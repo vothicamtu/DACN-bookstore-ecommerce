@@ -5,6 +5,7 @@ import cntt.dacn.backend.dto.request.OrderStatusUpdateRequest;
 import cntt.dacn.backend.dto.response.ApiResponse;
 import cntt.dacn.backend.dto.response.OrderPageResponse;
 import cntt.dacn.backend.dto.response.OrderResponse;
+import cntt.dacn.backend.dto.response.OrderReviewItemResponse;
 import cntt.dacn.backend.dto.response.PagedResponse;
 import cntt.dacn.backend.entity.OrderStatus;
 import cntt.dacn.backend.service.OrderService;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -96,6 +99,21 @@ public class OrderController {
                 ApiResponse.<OrderResponse>builder()
                         .success(true)
                         .message("Order status updated")
+                        .data(response)
+                        .build()
+        );
+    }
+
+    @GetMapping("/{orderId}/review-items")
+    public ResponseEntity<ApiResponse<List<OrderReviewItemResponse>>> getReviewItems(
+            @PathVariable Long orderId
+    ) {
+        List<OrderReviewItemResponse> response = orderService.getReviewItems(orderId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<List<OrderReviewItemResponse>>builder()
+                        .success(true)
+                        .message("Review items retrieved successfully")
                         .data(response)
                         .build()
         );

@@ -4,8 +4,11 @@ import cntt.dacn.backend.dto.request.CreateOrderRequest;
 import cntt.dacn.backend.dto.request.OrderStatusUpdateRequest;
 import cntt.dacn.backend.dto.response.OrderPageResponse;
 import cntt.dacn.backend.dto.response.OrderResponse;
+import cntt.dacn.backend.dto.response.OrderReviewItemResponse;
 import cntt.dacn.backend.dto.response.PagedResponse;
 import cntt.dacn.backend.entity.OrderStatus;
+
+import java.util.List;
 
 public interface OrderService {
 
@@ -18,4 +21,6 @@ public interface OrderService {
     OrderResponse updateOrderStatus(Long orderId, OrderStatusUpdateRequest request);
 
     OrderPageResponse getOrders(Long userId, OrderStatus status, int page, int size);
+
+    List<OrderReviewItemResponse> getReviewItems(Long orderId);
 }

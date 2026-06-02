@@ -4,6 +4,7 @@ import cntt.dacn.backend.dto.request.CreateOrderRequest;
 import cntt.dacn.backend.dto.request.OrderStatusUpdateRequest;
 import cntt.dacn.backend.dto.response.OrderPageResponse;
 import cntt.dacn.backend.dto.response.OrderResponse;
+import cntt.dacn.backend.dto.response.OrderReviewItemResponse;
 import cntt.dacn.backend.dto.response.PagedResponse;
 import cntt.dacn.backend.entity.*;
 import cntt.dacn.backend.exception.ResourceNotFoundException;
@@ -128,7 +129,7 @@ public class OrderServiceImpl implements OrderService {
                 orderRepository.findById(orderId)
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
-                                        "Order not found"
+                                        "Không có đơn hàng"
                                 )
                         );
 
@@ -246,5 +247,46 @@ public class OrderServiceImpl implements OrderService {
                 orders.getTotalElements(),
                 processingItems
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderReviewItemResponse> getReviewItems(Long orderId) {
+
+        Order order =
+                orderRepository.findById(orderId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Order not found"
+                                )
+                        );
+
+        return order.getOrderItems()
+                .stream()
+                .map(orderItem -> {
+                    Book book = orderItem.getBook();
+
+                    return OrderReviewItemResponse.builder()
+                            .orderId(order.getId())
+                            .orderStatus(order.getStatus())
+                            .orderItemId(orderItem.getId())
+                            .bookId(book != null ? book.getId() : null)
+                            .title(book != null ? book.getTitle() : null)
+                            .imageUrl(book != null ? book.getImageUrl() : null)
+                            .authorName(
+                                    book != null && book.getAuthor() != null
+                                            ? book.getAuthor().getAuthorName()
+                                            : null
+                            )
+                            .categoryName(
+                                    book != null && book.getCategory() != null
+                                            ? book.getCategory().getCategoryName()
+                                            : null
+                            )
+                            .quantity(orderItem.getQuantity())
+                            .price(orderItem.getPrice())
+                            .build();
+                })
+                .toList();
     }
 }
