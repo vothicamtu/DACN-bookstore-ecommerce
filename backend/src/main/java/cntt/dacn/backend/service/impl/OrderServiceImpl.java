@@ -2,6 +2,7 @@ package cntt.dacn.backend.service.impl;
 
 import cntt.dacn.backend.dto.request.CreateOrderRequest;
 import cntt.dacn.backend.dto.request.OrderStatusUpdateRequest;
+import cntt.dacn.backend.dto.response.OrderPageResponse;
 import cntt.dacn.backend.dto.response.OrderResponse;
 import cntt.dacn.backend.dto.response.PagedResponse;
 import cntt.dacn.backend.entity.*;
@@ -13,6 +14,7 @@ import cntt.dacn.backend.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -195,5 +197,54 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
 
         return MapperUtil.mapToOrderResponse(order);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderPageResponse getOrders(
+            Long userId,
+            OrderStatus status,
+            int page,
+            int size
+    ) {
+
+        Pageable pageable =
+                PageRequest.of(
+                        Math.max(page, 0),
+                        Math.min(Math.max(size, 1), 50),
+                        Sort.by("createdAt").descending()
+                );
+
+        Page<Order> orders;
+
+        if (userId != null && status != null) {
+            orders = orderRepository.findByUserIdAndStatus(userId, status, pageable);
+        } else if (userId != null) {
+            orders = orderRepository.findByUserId(userId, pageable);
+        } else if (status != null) {
+            orders = orderRepository.findByStatus(status, pageable);
+        } else {
+            orders = orderRepository.findAll(pageable);
+        }
+
+        List<OrderResponse> items =
+                orders.getContent()
+                        .stream()
+                        .map(MapperUtil::mapToOrderResponse)
+                        .toList();
+
+        long processingItems =
+                orderRepository.countByStatus(OrderStatus.PENDING)
+                        + orderRepository.countByStatus(OrderStatus.CONFIRMED)
+                        + orderRepository.countByStatus(OrderStatus.SHIPPING);
+
+        return new OrderPageResponse(
+                items,
+                orders.getNumber(),
+                orders.getSize(),
+                orders.getTotalPages(),
+                orders.getTotalElements(),
+                processingItems
+        );
     }
 }

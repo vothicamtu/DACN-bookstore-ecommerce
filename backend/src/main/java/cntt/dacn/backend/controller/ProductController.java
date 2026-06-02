@@ -1,13 +1,7 @@
 package cntt.dacn.backend.controller;
 
-import cntt.dacn.backend.dto.BookResponse;
-import cntt.dacn.backend.dto.ProductPageResponse;
-import cntt.dacn.backend.entity.Book;
-import cntt.dacn.backend.repository.ProductRepository;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
+import cntt.dacn.backend.dto.response.ProductPageResponse;
+import cntt.dacn.backend.service.ProductService;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,10 +14,10 @@ import java.math.BigDecimal;
 @RequestMapping("/api/products")
 @CrossOrigin(origins = "http://localhost:5173")
 public class ProductController {
-    private final ProductRepository productRepository;
+    private final ProductService productService;
 
-    public ProductController(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    public ProductController(ProductService productService) {
+        this.productService = productService;
     }
 
     @GetMapping
@@ -37,99 +31,15 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size
     ) {
-        int safePage = Math.max(page, 0);
-        int safeSize = Math.min(Math.max(size, 1), 50);
-        Pageable pageable = PageRequest.of(safePage, safeSize, buildSort(sort));
-        var products = productRepository.findAll(
-                buildSpecification(category, minPrice, maxPrice, minRating, keyword),
-                pageable
+        return productService.getProducts(
+                category,
+                minPrice,
+                maxPrice,
+                minRating,
+                keyword,
+                sort,
+                page,
+                size
         );
-        var items = products.getContent()
-                .stream()
-                .map(BookResponse::from)
-                .toList();
-
-        return new ProductPageResponse(
-                items,
-                products.getNumber(),
-                products.getSize(),
-                products.getTotalPages(),
-                products.getTotalElements()
-        );
-    }
-
-//    LỌC SẢN PHẨM
-
-    private Specification<Book> buildSpecification(
-            String category,
-            BigDecimal minPrice,
-            BigDecimal maxPrice,
-            Float minRating,
-            String keyword
-    ) {
-        Specification<Book> specification = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
-
-        if (category != null && !category.isBlank()) {
-            specification = specification.and(hasCategory(category));
-        }
-
-        if (minPrice != null) {
-            specification = specification.and(priceGreaterThanOrEqual(minPrice));
-        }
-
-        if (maxPrice != null) {
-            specification = specification.and(priceLessThanOrEqual(maxPrice));
-        }
-
-        if (minRating != null) {
-            specification = specification.and(ratingGreaterThanOrEqual(minRating));
-        }
-
-        if (keyword != null && !keyword.isBlank()) {
-            specification = specification.and(hasKeyword(keyword));
-        }
-
-        return specification;
-    }
-
-    private Specification<Book> hasKeyword(String keyword) {
-        return (root, query, criteriaBuilder) -> {
-            String pattern = "%" + keyword.toLowerCase() + "%";
-            return criteriaBuilder.or(
-                    criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), pattern),
-                    criteriaBuilder.like(criteriaBuilder.lower(root.join("author").get("authorName")), pattern)
-            );
-        };
-    }
-
-    private Specification<Book> hasCategory(String category) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.join("category").get("categoryName"), category);
-    }
-
-    private Specification<Book> priceGreaterThanOrEqual(BigDecimal minPrice) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice);
-    }
-
-    private Specification<Book> priceLessThanOrEqual(BigDecimal maxPrice) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice);
-    }
-
-    private Specification<Book> ratingGreaterThanOrEqual(Float minRating) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.greaterThanOrEqualTo(root.get("averageRating"), minRating);
-    }
-
-    private Sort buildSort(String sort) {
-        return switch (sort) {
-            case "priceAsc" -> Sort.by(Sort.Direction.ASC, "price");
-            case "priceDesc" -> Sort.by(Sort.Direction.DESC, "price");
-            case "bestseller", "popular" -> Sort.by(Sort.Direction.DESC, "soldCount");
-            case "newest" -> Sort.by(Sort.Direction.DESC, "publishDate");
-            case "ratingDesc" -> Sort.by(Sort.Direction.DESC, "averageRating");
-            default -> Sort.by(Sort.Direction.ASC, "id");
-        };
     }
 }

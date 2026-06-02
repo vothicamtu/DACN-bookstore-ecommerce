@@ -149,15 +149,6 @@
   font-size: 0.85rem;
 }
 
-.bookland-sortSelect {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #e0cda2;
-  border-radius: 10px;
-  background: #fffaf0;
-  color: var(--bookland-text);
-  outline: none;
-}
 .bookland-sortMenu {
   position: relative;
 }
