@@ -51,6 +51,8 @@ public class MapperUtil {
                     book.getAverageRating()
             )
 
+            .soldCount(book.getSoldCount())
+
             .categoryName(
 
                     book.getCategory() != null

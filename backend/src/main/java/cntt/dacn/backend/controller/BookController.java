@@ -26,10 +26,34 @@ public class BookController {
             ApiResponse<PagedResponse<BookResponse>>
             > getAllBooks(
 
+            @RequestParam(required = false)
+            String category,
+
+            @RequestParam(required = false)
+            Long categoryId,
+
+            @RequestParam(required = false)
+            String keyword,
+
+            @RequestParam(required = false)
+            BigDecimal minPrice,
+
+            @RequestParam(required = false)
+            BigDecimal maxPrice,
+
+            @RequestParam(required = false)
+            Float minRating,
+
+            @RequestParam(required = false)
+            String sort,
+
             @RequestParam(defaultValue = "0")
             int page,
 
-            @RequestParam(defaultValue = "10")
+            @RequestParam(required = false)
+            Integer limit,
+
+            @RequestParam(defaultValue = "9")
             int size,
 
             @RequestParam(defaultValue = "id")
@@ -41,10 +65,15 @@ public class BookController {
 
         PagedResponse<BookResponse> response =
                 bookService.getAllBooks(
+                        category,
+                        categoryId,
+                        keyword,
+                        minPrice,
+                        maxPrice,
+                        minRating,
+                        sort,
                         page,
-                        size,
-                        sortBy,
-                        sortDir
+                        limit != null ? limit : size
                 );
 
         return ResponseEntity.ok(
@@ -61,6 +90,82 @@ public class BookController {
 
                         .data(response)
 
+                        .build()
+        );
+    }
+
+    @GetMapping("/best-seller")
+    public ResponseEntity<
+            ApiResponse<PagedResponse<BookResponse>>
+            > getBestSellerBooks(
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(required = false)
+            Integer limit,
+
+            @RequestParam(defaultValue = "9")
+            int size
+    ) {
+
+        PagedResponse<BookResponse> response =
+                bookService.getAllBooks(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        "bestseller",
+                        page,
+                        limit != null ? limit : size
+                );
+
+        return ResponseEntity.ok(
+                ApiResponse
+                        .<PagedResponse<BookResponse>>builder()
+                        .success(true)
+                        .message("Best seller books retrieved successfully")
+                        .data(response)
+                        .build()
+        );
+    }
+
+    @GetMapping("/new")
+    public ResponseEntity<
+            ApiResponse<PagedResponse<BookResponse>>
+            > getNewestBooks(
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(required = false)
+            Integer limit,
+
+            @RequestParam(defaultValue = "9")
+            int size
+    ) {
+
+        PagedResponse<BookResponse> response =
+                bookService.getAllBooks(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        "newest",
+                        page,
+                        limit != null ? limit : size
+                );
+
+        return ResponseEntity.ok(
+                ApiResponse
+                        .<PagedResponse<BookResponse>>builder()
+                        .success(true)
+                        .message("Newest books retrieved successfully")
+                        .data(response)
                         .build()
         );
     }

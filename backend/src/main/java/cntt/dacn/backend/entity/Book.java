@@ -46,6 +46,9 @@ public class Book {
     @Column(name = "average_rating")
     private Float averageRating = 0f;
 
+    @Column(name = "sold_count")
+    private Integer soldCount = 0;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

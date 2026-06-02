@@ -48,68 +48,77 @@ export default function FilterSidebar({
                                       }: FilterSidebarProps) {
 
     return (
-        <aside className="w-[280px] bg-[#EFE2B6] rounded-[28px] p-7 h-fit">
+        <aside className="bookland-filters">
+            <div className="bookland-filterPanel">
+                <div className="bookland-filterGroup">
+                    <h2>DANH MỤC</h2>
 
-            <h3 className="uppercase text-xs tracking-wider font-semibold mb-5 text-[#7B613A]">
-                Danh mục
-            </h3>
+                    <div className="bookland-chipList">
+                        <button
+                            type="button"
+                            onClick={() => setCategoryId("")}
+                            className={`bookland-chip ${categoryId === "" ? "is-active" : ""}`}
+                        >
+                            Tất cả
+                        </button>
 
-            <div className="flex flex-wrap gap-3">
-
-                {categories.map((category) => (
-
-                    <button
-                        key={category.id}
-                        onClick={() =>
-                            setCategoryId(categoryId === category.id ? "" : category.id)
-                        }
-                        className={`px-4 py-2 rounded-full text-sm ${
-                            categoryId === category.id
-                                ? "bg-[#8C5A1E] text-white"
-                                : "bg-[#F8F3E7]"
-                        }`}
-                    >
-                        {category.categoryName}
-                    </button>
-                ))}
-            </div>
-
-            <div className="mt-10">
-
-                <h3 className="uppercase text-xs tracking-wider font-semibold mb-5 text-[#7B613A]">
-                    Khoảng giá
-                </h3>
-
-                <div className="space-y-4">
-
-                    <input
-                        type="number"
-                        placeholder="Giá thấp nhất"
-                        value={minPrice}
-                        onChange={(e) =>
-                            setMinPrice(e.target.value)
-                        }
-                        className="w-full rounded-xl border border-[#D9C187] bg-white px-4 py-3"
-                    />
-
-                    <input
-                        type="number"
-                        placeholder="Giá cao nhất"
-                        value={maxPrice}
-                        onChange={(e) =>
-                            setMaxPrice(e.target.value)
-                        }
-                        className="w-full rounded-xl border border-[#D9C187] bg-white px-4 py-3"
-                    />
+                        {categories.map((category) => (
+                            <button
+                                key={category.id}
+                                type="button"
+                                onClick={() =>
+                                    setCategoryId(categoryId === category.id ? "" : category.id)
+                                }
+                                className={`bookland-chip ${categoryId === category.id ? "is-active" : ""}`}
+                            >
+                                {category.categoryName}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-            </div>
 
-            <button
-                onClick={onSearch}
-                className="w-full mt-10 bg-[#8C5A1E] text-white rounded-2xl py-4"
-            >
-                Áp dụng bộ lọc
-            </button>
+                <div className="bookland-filterGroup">
+                    <h2>KHOẢNG GIÁ</h2>
+
+                    <div className="bookland-priceRange">
+                        <label>
+                            <span>Từ</span>
+                            <input
+                                type="number"
+                                min="0"
+                                step="10000"
+                                placeholder="Giá thấp nhất"
+                                value={minPrice}
+                                onChange={(e) =>
+                                    setMinPrice(e.target.value)
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            <span>Đến</span>
+                            <input
+                                type="number"
+                                min="0"
+                                step="10000"
+                                placeholder="Giá cao nhất"
+                                value={maxPrice}
+                                onChange={(e) =>
+                                    setMaxPrice(e.target.value)
+                                }
+                            />
+                        </label>
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={onSearch}
+                    className="bookland-filterReset bookland-filterApply"
+                >
+                    Áp dụng bộ lọc
+                </button>
+            </div>
         </aside>
     );
 }

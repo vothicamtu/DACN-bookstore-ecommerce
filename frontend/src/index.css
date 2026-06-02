@@ -8,3 +8,15 @@ body {
     font-family: Inter, sans-serif;
     background: #F7F2E7;
 }
+.input-checkout{
+  width:100%;
+  padding:16px 20px;
+  border-radius:16px;
+  border:1px solid #E5D8BA;
+  background:#FAF7F0;
+  outline:none;
+}
+
+.input-checkout:focus{
+  border-color:#A46A1F;
+}

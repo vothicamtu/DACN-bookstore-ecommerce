@@ -158,6 +158,65 @@
   color: var(--bookland-text);
   outline: none;
 }
+.bookland-sortMenu {
+  position: relative;
+}
+.bookland-sortMenu__button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 16px;
+  border: 1px solid #e0cda2;
+  border-radius: 10px;
+  background: #fffaf0;
+  color: var(--bookland-text);
+  cursor: pointer;
+  line-height: 1;
+}
+.bookland-sortMenu__button span {
+  line-height: 1;
+}
+.bookland-sortMenu__icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  color: #5f4931;
+  stroke-width: 2.2;
+  transition: transform 0.15s ease;
+}
+.bookland-sortMenu__button[aria-expanded="true"] .bookland-sortMenu__icon {
+  transform: rotate(180deg);
+}
+.bookland-sortMenu__list {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 15;
+  display: grid;
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #e0cda2;
+  border-radius: 10px;
+  background: #fffaf0;
+  box-shadow: 0 18px 36px rgba(88, 59, 20, 0.14);
+}
+.bookland-sortMenu__item {
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  padding: 10px 12px;
+  color: var(--bookland-text);
+  text-align: left;
+  cursor: pointer;
+}
+.bookland-sortMenu__item:hover,
+.bookland-sortMenu__item.is-active {
+  background: #8d5f1e;
+  color: #fff;
+}
 .bookland-filterReset {
   width: 100%;
   padding: 12px 14px;
@@ -169,14 +228,52 @@
   cursor: pointer;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
+.bookland-filterApply {
+  margin-top: 6px;
+  background: #8d5f1e;
+  color: #fff;
+}
 
 .bookland-content {
   min-width: 0;
+}
+.bookland-searchPageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.bookland-searchPageHeader h1 {
+  margin: 0;
+  color: var(--bookland-text);
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  line-height: 1.1;
+}
+.bookland-searchPageHeader p {
+  margin: 8px 0 0;
+  color: var(--bookland-muted);
+  font-weight: 700;
 }
 .bookland-resultSummary {
   margin-bottom: 12px;
   color: var(--bookland-muted);
   font-size: 0.92rem;
+  font-weight: 700;
+}
+.bookland-cartMessage {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid #b8e2c1;
+  border-radius: 10px;
+  background: #f0fff4;
+  color: #237044;
+  font-weight: 700;
+}
+.bookland-cartError {
+  margin: 8px 0 0;
+  color: #c0392b;
+  font-size: 0.88rem;
   font-weight: 700;
 }
 .bookland-state {
@@ -195,6 +292,11 @@
   color: #a33a2a;
 }
 .bookland-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.bookland-searchGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
@@ -270,6 +372,18 @@
 .bookland-card__body {
   padding: 14px 16px 18px;
 }
+.bookland-card__cartButton {
+  margin-top: 14px;
+}
+.bookland-card__cartButton:hover:not(:disabled) {
+  border-color: #8d5f1e;
+  background: #8d5f1e;
+  color: #fff;
+}
+.bookland-card__cartButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
 .bookland-card__meta {
   display: flex;
   justify-content: space-between;
@@ -335,6 +449,61 @@
   cursor: not-allowed;
   opacity: 0.45;
 }
+.bookland-loginPrompt {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.36);
+}
+.bookland-loginPrompt__panel {
+  width: min(100%, 420px);
+  padding: 26px 24px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(33, 24, 14, 0.24);
+  text-align: center;
+}
+.bookland-loginPrompt__panel h2 {
+  margin: 0;
+  color: var(--bookland-text);
+  font-size: 1.45rem;
+}
+.bookland-loginPrompt__panel p {
+  margin: 12px 0 0;
+  color: var(--bookland-muted);
+  line-height: 1.5;
+}
+.bookland-loginPrompt__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 22px;
+}
+.bookland-loginPrompt__actions button,
+.bookland-loginPrompt__actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 10px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.bookland-loginPrompt__actions button {
+  border: 1px solid var(--bookland-border);
+  background: #fff;
+  color: var(--bookland-muted);
+  cursor: pointer;
+}
+.bookland-loginPrompt__actions a {
+  border: 1px solid #a56d24;
+  background: #a56d24;
+  color: #fff;
+}
 
 @media (max-width: 1100px) {
   .bookland-layout {
@@ -346,6 +515,9 @@
   .bookland-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .bookland-searchGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .bookland-footer__inner {
     grid-template-columns: 1fr 1fr;
   }
@@ -353,6 +525,9 @@
 
 @media (max-width: 720px) {
   .bookland-grid {
+    grid-template-columns: 1fr;
+  }
+  .bookland-searchGrid {
     grid-template-columns: 1fr;
   }
 }
