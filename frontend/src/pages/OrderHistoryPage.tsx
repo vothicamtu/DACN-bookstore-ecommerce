@@ -170,10 +170,17 @@ const OrderHistoryPage: React.FC = () => {
                       <td>{currencyFormatter.format(getOrderTotal(order))}</td>
                       <td><span className={`badge ${status.className}`}>{status.label}</span></td>
                       <td className="actions">
-                        <button className="action-btn" disabled={orderStatus !== 'DELIVERED'}>
-                          <PencilLine className="action-btn__icon" aria-hidden="true" />
-                          <span>Đánh giá</span>
-                        </button>
+                        {orderStatus === 'DELIVERED' ? (
+                          <Link to={`/review?orderId=${orderId}`} className="action-btn">
+                            <PencilLine className="action-btn__icon" aria-hidden="true" />
+                            <span>Đánh giá</span>
+                          </Link>
+                        ) : (
+                          <button className="action-btn" disabled>
+                            <PencilLine className="action-btn__icon" aria-hidden="true" />
+                            <span>Đánh giá</span>
+                          </button>
+                        )}
                         <Link to={`/orders/${orderId}`} className="action-btn secondary">
                           <Eye className="action-btn__icon" aria-hidden="true" />
                           <span>Chi tiết</span>
