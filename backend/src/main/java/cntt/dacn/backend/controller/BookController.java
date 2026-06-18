@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "http://localhost:5173", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
 public class BookController {
 
     private final BookService bookService;
