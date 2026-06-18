@@ -1,3 +1,7 @@
+@import "tailwindcss";
+
+/* Khai báo cho Tailwind biết vị trí quét toàn bộ class JSX/TSX của bạn */
+@source "./src/**/*.{ts,tsx}";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
