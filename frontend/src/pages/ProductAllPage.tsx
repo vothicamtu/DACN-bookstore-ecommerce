@@ -37,11 +37,11 @@ type ApiProduct = {
 };
 
 type ApiProductPage = {
-	items: ApiProduct[];
+	content: ApiProduct[];
 	page: number;
 	size: number;
 	totalPages: number;
-	totalItems: number;
+	totalElements: number;
 };
 
 const PRODUCTS_PER_PAGE = 9;
@@ -282,9 +282,9 @@ export default function ProductAllPage() {
 			.then((response) => {
 				if (isMounted) {
 					const data = response.data as ApiProductPage;
-					setProducts(data.items.map(mapProduct));
+					setProducts(data.content.map(mapProduct));
 					setTotalPages(data.totalPages);
-					setTotalItems(data.totalItems);
+					setTotalItems(data.totalElements);
 					setError('');
 				}
 			})

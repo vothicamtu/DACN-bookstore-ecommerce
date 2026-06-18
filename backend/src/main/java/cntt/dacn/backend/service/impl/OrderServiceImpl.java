@@ -85,6 +85,10 @@ public class OrderServiceImpl implements OrderService {
                 .phoneNumber(
                         request.getPhoneNumber()
                 )
+                .customerName(request.getCustomerName())
+                .customerEmail(request.getCustomerEmail())
+                .shippingMethod(request.getShippingMethod())
+                .paymentMethod(request.getPaymentMethod())
                 .note(request.getNote())
                 .status(OrderStatus.PENDING)
                 .orderItems(new ArrayList<>())

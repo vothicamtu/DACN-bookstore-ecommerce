@@ -4,8 +4,8 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CheckoutSteps from "../components/checkout/CheckoutSteps";
 import RecipientForm, { type RecipientFormValue } from "../components/checkout/RecipientForm";
-import ShippingMethod from "../components/checkout/ShippingMethod";
-import PaymentMethod from "../components/checkout/PaymentMethod";
+import ShippingMethod, { type ShippingMethodValue } from "../components/checkout/ShippingMethod";
+import PaymentMethod, { type PaymentMethodValue } from "../components/checkout/PaymentMethod";
 import OrderNote from "../components/checkout/OrderNote";
 import OrderSummary from "../components/checkout/OrderSummary";
 import { getCart, type CartResponse } from "../services/cartService";
@@ -23,6 +23,8 @@ const initialRecipient: RecipientFormValue = {
 export default function CheckoutPage() {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [recipient, setRecipient] = useState<RecipientFormValue>(initialRecipient);
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethodValue>("standard");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodValue>("cod");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -61,8 +63,13 @@ export default function CheckoutPage() {
       recipient.city,
     ].filter(Boolean).join(", ");
 
-    if (!recipient.phoneNumber.trim() || !shippingAddress.trim()) {
-      setError("Vui lòng nhập số điện thoại và địa chỉ nhận hàng.");
+    if (
+      !recipient.fullName.trim() ||
+      !recipient.email.trim() ||
+      !recipient.phoneNumber.trim() ||
+      !shippingAddress.trim()
+    ) {
+      setError("Vui lòng nhập họ tên, email, số điện thoại và địa chỉ nhận hàng.");
       return;
     }
 
@@ -71,8 +78,12 @@ export default function CheckoutPage() {
 
     try {
       const order = await createOrder({
+        customerName: recipient.fullName,
+        customerEmail: recipient.email,
         shippingAddress,
         phoneNumber: recipient.phoneNumber,
+        shippingMethod,
+        paymentMethod,
         note,
       });
       navigate("/checkout/success", { state: { order } });
@@ -99,8 +110,8 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-12 gap-8 mt-10">
           <div className="col-span-8 space-y-8">
             <RecipientForm value={recipient} onChange={setRecipient} />
-            <ShippingMethod />
-            <PaymentMethod />
+            <ShippingMethod value={shippingMethod} onChange={setShippingMethod} />
+            <PaymentMethod value={paymentMethod} onChange={setPaymentMethod} />
             <OrderNote value={note} onChange={setNote} />
           </div>
 

@@ -1,8 +1,9 @@
 package cntt.dacn.backend.controller;
 
-import cntt.dacn.backend.dto.BookResponse;
-import cntt.dacn.backend.dto.ProductPageResponse;
+import cntt.dacn.backend.dto.response.BookResponse;
+import cntt.dacn.backend.dto.response.PagedResponse;
 import cntt.dacn.backend.entity.Book;
+import cntt.dacn.backend.mapper.MapperUtil;
 import cntt.dacn.backend.repository.ProductRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +19,7 @@ import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173"})
 public class ProductController {
     private final ProductRepository productRepository;
 
@@ -27,7 +28,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public ProductPageResponse getAllProducts(
+    public PagedResponse<BookResponse> getAllProducts(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
@@ -46,16 +47,17 @@ public class ProductController {
         );
         var items = products.getContent()
                 .stream()
-                .map(BookResponse::from)
+                .map(MapperUtil::mapToBookResponse)
                 .toList();
 
-        return new ProductPageResponse(
-                items,
-                products.getNumber(),
-                products.getSize(),
-                products.getTotalPages(),
-                products.getTotalElements()
-        );
+        return PagedResponse.<BookResponse>builder()
+                .content(items)
+                .page(products.getNumber())
+                .size(products.getSize())
+                .totalElements(products.getTotalElements())
+                .totalPages(products.getTotalPages())
+                .last(products.isLast())
+                .build();
     }
 
 //    LỌC SẢN PHẨM

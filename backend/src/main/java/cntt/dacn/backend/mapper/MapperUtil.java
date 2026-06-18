@@ -53,6 +53,14 @@ public class MapperUtil {
 
             .soldCount(book.getSoldCount())
 
+            .categoryId(
+
+                    book.getCategory() != null
+                            ? book.getCategory()
+                            .getId()
+                            : null
+            )
+
             .categoryName(
 
                     book.getCategory() != null
@@ -61,11 +69,27 @@ public class MapperUtil {
                             : null
             )
 
+            .authorId(
+
+                    book.getAuthor() != null
+                            ? book.getAuthor()
+                            .getId()
+                            : null
+            )
+
             .authorName(
 
                     book.getAuthor() != null
                             ? book.getAuthor()
                             .getAuthorName()
+                            : null
+            )
+
+            .publisherId(
+
+                    book.getPublisher() != null
+                            ? book.getPublisher()
+                            .getId()
                             : null
             )
 
@@ -168,6 +192,10 @@ public class MapperUtil {
                 .status(order.getStatus())
                 .shippingAddress(order.getShippingAddress())
                 .phoneNumber(order.getPhoneNumber())
+                .customerName(order.getCustomerName())
+                .customerEmail(order.getCustomerEmail())
+                .shippingMethod(order.getShippingMethod())
+                .paymentMethod(order.getPaymentMethod())
                 .note(order.getNote())
                 .createdAt(order.getCreatedAt())
                 .build();

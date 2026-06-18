@@ -5,7 +5,7 @@ export type OrderStatus =
     | "PENDING"
     | "CONFIRMED"
     | "SHIPPING"
-    | "COMPLETED"
+    | "DELIVERED"
     | "CANCELLED";
 
 export interface OrderItemResponse {
@@ -25,6 +25,10 @@ export interface OrderResponse {
     status: OrderStatus;
     shippingAddress: string;
     phoneNumber: string;
+    customerName: string;
+    customerEmail: string;
+    shippingMethod: string;
+    paymentMethod: string;
     note?: string | null;
     createdAt: string;
 }
@@ -39,8 +43,12 @@ export interface PagedResponse<T> {
 }
 
 export interface CreateOrderPayload {
+    customerName: string;
+    customerEmail: string;
     shippingAddress: string;
     phoneNumber: string;
+    shippingMethod: string;
+    paymentMethod: string;
     note?: string;
 }
 
