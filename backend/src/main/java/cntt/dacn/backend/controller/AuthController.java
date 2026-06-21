@@ -44,7 +44,7 @@ public class AuthController {
                 .fullName(request.getFullName())
                 .username(request.getUsername())
                 .email(request.getEmail())
-                .password(request.getPassword()) // Khuyến nghị thực tế dùng BCryptPasswordEncoder bảo mật
+                .password(request.getPassword())
                 .role(Role.USER)
                 .status(true)
                 .createdAt(LocalDateTime.now())
