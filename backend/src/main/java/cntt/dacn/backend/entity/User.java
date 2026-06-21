@@ -36,11 +36,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    private String address;
-
-    @Builder.Default
-    private Boolean enabled = true;
-
     @Builder.Default
     private Boolean status=true;
 
