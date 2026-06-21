@@ -6,10 +6,15 @@ import java.math.BigDecimal;
 public interface BookService {
 
     PagedResponse<BookResponse> getAllBooks(
+            String category,
+            Long categoryId,
+            String keyword,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Float minRating,
+            String sort,
             int page,
-            int size,
-            String sortBy,
-            String sortDir
+            int size
     );
 
     BookResponse getBookById(Long id);
