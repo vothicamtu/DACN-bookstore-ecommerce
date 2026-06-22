@@ -19,90 +19,90 @@ public class MapperUtil {
     private MapperUtil() {
     }
 
-    public static BookResponse mapToBookResponse( Book book) {
+    public static BookResponse mapToBookResponse(Book book) {
 
-    return BookResponse.builder()
+        return BookResponse.builder()
 
-            .id(book.getId())
+                .id(book.getId())
 
-            .title(book.getTitle())
+                .title(book.getTitle())
 
-            .imageUrl(book.getImageUrl())
+                .imageUrl(book.getImageUrl())
 
-            .description(book.getDescription())
+                .description(book.getDescription())
 
-            .price(book.getPrice())
+                .price(book.getPrice())
 
-            .discountPercent(
-                    book.getDiscountPercent()
-            )
+                .discountPercent(
+                        book.getDiscountPercent()
+                )
 
-            .stock(book.getStock())
+                .stock(book.getStock())
 
-            .translator(book.getTranslator())
+                .translator(book.getTranslator())
 
-            .pageCount(book.getPageCount())
+                .pageCount(book.getPageCount())
 
-            .size(book.getSize())
+                .size(book.getSize())
 
-            .publishDate(book.getPublishDate())
+                .publishDate(book.getPublishDate())
 
-            .averageRating(
-                    book.getAverageRating()
-            )
+                .averageRating(
+                        book.getAverageRating()
+                )
 
-            .soldCount(book.getSoldCount())
+                .soldCount(book.getSoldCount())
 
-            .categoryId(
+                .categoryId(
 
-                    book.getCategory() != null
-                            ? book.getCategory()
-                            .getId()
-                            : null
-            )
+                        book.getCategory() != null
+                                ? book.getCategory()
+                                .getId()
+                                : null
+                )
 
-            .categoryName(
+                .categoryName(
 
-                    book.getCategory() != null
-                            ? book.getCategory()
-                            .getCategoryName()
-                            : null
-            )
+                        book.getCategory() != null
+                                ? book.getCategory()
+                                .getCategoryName()
+                                : null
+                )
 
-            .authorId(
+                .authorId(
 
-                    book.getAuthor() != null
-                            ? book.getAuthor()
-                            .getId()
-                            : null
-            )
+                        book.getAuthor() != null
+                                ? book.getAuthor()
+                                .getId()
+                                : null
+                )
 
-            .authorName(
+                .authorName(
 
-                    book.getAuthor() != null
-                            ? book.getAuthor()
-                            .getAuthorName()
-                            : null
-            )
+                        book.getAuthor() != null
+                                ? book.getAuthor()
+                                .getAuthorName()
+                                : null
+                )
 
-            .publisherId(
+                .publisherId(
 
-                    book.getPublisher() != null
-                            ? book.getPublisher()
-                            .getId()
-                            : null
-            )
+                        book.getPublisher() != null
+                                ? book.getPublisher()
+                                .getId()
+                                : null
+                )
 
-            .publisherName(
+                .publisherName(
 
-                    book.getPublisher() != null
-                            ? book.getPublisher()
-                            .getPublisherName()
-                            : null
-            )
+                        book.getPublisher() != null
+                                ? book.getPublisher()
+                                .getPublisherName()
+                                : null
+                )
 
-            .build();
-}
+                .build();
+    }
 
     public static CartItemResponse mapToCartItemResponse(
             CartItem cartItem
@@ -168,6 +168,7 @@ public class MapperUtil {
                 .orderItemId(orderItem.getId())
                 .bookId(orderItem.getBook().getId())
                 .title(orderItem.getBook().getTitle())
+                .imageUrl(orderItem.getBook().getImageUrl())
                 .quantity(orderItem.getQuantity())
                 .price(orderItem.getPrice())
                 .totalPrice(totalPrice)

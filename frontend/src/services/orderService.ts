@@ -1,5 +1,5 @@
 import axiosClient from "../api/axiosClient";
-import type { ApiResponse } from "./cartService";
+import { notifyCartUpdated, type ApiResponse } from "./cartService";
 
 export type OrderStatus =
     | "PENDING"
@@ -50,10 +50,12 @@ export interface CreateOrderPayload {
     shippingMethod: string;
     paymentMethod: string;
     note?: string;
+    cartItemIds?: number[];
 }
 
 export async function createOrder(payload: CreateOrderPayload) {
     const response = await axiosClient.post<ApiResponse<OrderResponse>>("/orders", payload);
+    notifyCartUpdated();
     return response.data.data;
 }
 

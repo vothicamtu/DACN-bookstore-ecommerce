@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import CheckoutSteps from "../components/checkout/CheckoutSteps";
 import RecipientForm, { type RecipientFormValue } from "../components/checkout/RecipientForm";
 import ShippingMethod, { type ShippingMethodValue } from "../components/checkout/ShippingMethod";
 import PaymentMethod, { type PaymentMethodValue } from "../components/checkout/PaymentMethod";
@@ -10,6 +9,8 @@ import OrderNote from "../components/checkout/OrderNote";
 import OrderSummary from "../components/checkout/OrderSummary";
 import { getCart, type CartResponse } from "../services/cartService";
 import { createOrder } from "../services/orderService";
+import axios from "axios";
+import "../styles/checkout.css";
 
 const initialRecipient: RecipientFormValue = {
   fullName: "",
@@ -29,7 +30,10 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const requestedCartItemIds = (location.state as { cartItemIds?: number[] } | null)?.cartItemIds;
 
   useEffect(() => {
     let mounted = true;
@@ -37,7 +41,21 @@ export default function CheckoutPage() {
     getCart()
       .then((data) => {
         if (mounted) {
-          setCart(data);
+          if (requestedCartItemIds?.length) {
+            const selectedItems = data.items.filter((item) =>
+              requestedCartItemIds.includes(item.cartItemId)
+            );
+            setCart({
+              ...data,
+              items: selectedItems,
+              totalAmount: selectedItems.reduce(
+                (total, item) => total + Number(item.totalPrice),
+                0
+              ),
+            });
+          } else {
+            setCart(data);
+          }
         }
       })
       .catch(() => {
@@ -85,46 +103,57 @@ export default function CheckoutPage() {
         shippingMethod,
         paymentMethod,
         note,
+        cartItemIds: cart?.items.map((item) => item.cartItemId),
       });
       navigate("/checkout/success", { state: { order } });
-    } catch {
-      setError("Không thể đặt hàng. Vui lòng kiểm tra giỏ hàng và thử lại.");
+    } catch (requestError) {
+      if (axios.isAxiosError(requestError)) {
+        const responseData = requestError.response?.data;
+        const validationMessage = responseData && typeof responseData === "object"
+          ? Object.values(responseData).find((value): value is string => typeof value === "string")
+          : undefined;
+
+        if (requestError.response?.status === 401 || requestError.response?.status === 403) {
+          setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại trước khi đặt hàng.");
+        } else {
+          setError(responseData?.message || validationMessage || "Không thể đặt hàng. Vui lòng thử lại.");
+        }
+      } else {
+        setError("Không thể đặt hàng. Vui lòng thử lại.");
+      }
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F2E7]">
+    <div className="checkout-page">
       <Header />
 
-      <div className="max-w-[1400px] mx-auto px-6 py-10">
-        <CheckoutSteps />
-
+      <main className="checkout-page__main">
         {error ? (
-          <div className="mt-8 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-red-700">
-            {error}
-          </div>
+          <div className="checkout-page__error">{error}</div>
         ) : null}
 
-        <div className="grid grid-cols-12 gap-8 mt-10">
-          <div className="col-span-8 space-y-8">
+        <div className="checkout-page__layout">
+          <div className="checkout-page__forms">
             <RecipientForm value={recipient} onChange={setRecipient} />
             <ShippingMethod value={shippingMethod} onChange={setShippingMethod} />
             <PaymentMethod value={paymentMethod} onChange={setPaymentMethod} />
             <OrderNote value={note} onChange={setNote} />
           </div>
 
-          <div className="col-span-4">
-            <OrderSummary
-              cart={cart}
-              loading={loading}
-              submitting={submitting}
-              onSubmit={handleSubmit}
-            />
-          </div>
+          <OrderSummary
+            cart={cart}
+            loading={loading}
+            submitting={submitting}
+            shippingMethod={shippingMethod}
+            acceptedTerms={acceptedTerms}
+            onAcceptedTermsChange={setAcceptedTerms}
+            onSubmit={handleSubmit}
+          />
         </div>
-      </div>
+      </main>
 
       <Footer />
     </div>

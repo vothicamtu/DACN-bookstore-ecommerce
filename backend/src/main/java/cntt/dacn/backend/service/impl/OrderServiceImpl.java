@@ -2,10 +2,13 @@ package cntt.dacn.backend.service.impl;
 
 import cntt.dacn.backend.dto.request.CreateOrderRequest;
 import cntt.dacn.backend.dto.request.OrderStatusUpdateRequest;
+import cntt.dacn.backend.dto.response.OrderPageResponse;
 import cntt.dacn.backend.dto.response.OrderResponse;
+import cntt.dacn.backend.dto.response.OrderReviewItemResponse;
 import cntt.dacn.backend.dto.response.PagedResponse;
 import cntt.dacn.backend.entity.*;
 import cntt.dacn.backend.exception.ResourceNotFoundException;
+import cntt.dacn.backend.exception.BadRequestException;
 import cntt.dacn.backend.repository.*;
 import cntt.dacn.backend.service.OrderService;
 import cntt.dacn.backend.mapper.MapperUtil;
@@ -13,10 +16,12 @@ import cntt.dacn.backend.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +38,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public OrderResponse createOrder(
             CreateOrderRequest request
     ) {
@@ -52,8 +58,22 @@ public class OrderServiceImpl implements OrderService {
                                 )
                         );
 
-        List<CartItem> cartItems =
+        List<CartItem> allCartItems =
                 cartItemRepository.findByCart(cart);
+
+        List<CartItem> cartItems;
+        if (request.getCartItemIds() == null || request.getCartItemIds().isEmpty()) {
+            cartItems = allCartItems;
+        } else {
+            Set<Long> selectedIds = Set.copyOf(request.getCartItemIds());
+            cartItems = allCartItems.stream()
+                    .filter(item -> selectedIds.contains(item.getId()))
+                    .toList();
+
+            if (cartItems.size() != selectedIds.size()) {
+                throw new BadRequestException("Một hoặc nhiều sản phẩm không thuộc giỏ hàng của bạn");
+            }
+        }
 
         if (cartItems.isEmpty()) {
 
@@ -114,7 +134,7 @@ public class OrderServiceImpl implements OrderService {
 
         orderItemRepository.saveAll(orderItems);
 
-        cartItemRepository.deleteByCart(cart);
+        cartItemRepository.deleteAll(cartItems);
 
         savedOrder.setOrderItems(orderItems);
 
@@ -130,7 +150,7 @@ public class OrderServiceImpl implements OrderService {
                 orderRepository.findById(orderId)
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
-                                        "Order not found"
+                                        "Không có đơn hàng"
                                 )
                         );
 
@@ -199,5 +219,95 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
 
         return MapperUtil.mapToOrderResponse(order);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderPageResponse getOrders(
+            Long userId,
+            OrderStatus status,
+            int page,
+            int size
+    ) {
+
+        Pageable pageable =
+                PageRequest.of(
+                        Math.max(page, 0),
+                        Math.min(Math.max(size, 1), 50),
+                        Sort.by("createdAt").descending()
+                );
+
+        Page<Order> orders;
+
+        if (userId != null && status != null) {
+            orders = orderRepository.findByUserIdAndStatus(userId, status, pageable);
+        } else if (userId != null) {
+            orders = orderRepository.findByUserId(userId, pageable);
+        } else if (status != null) {
+            orders = orderRepository.findByStatus(status, pageable);
+        } else {
+            orders = orderRepository.findAll(pageable);
+        }
+
+        List<OrderResponse> items =
+                orders.getContent()
+                        .stream()
+                        .map(MapperUtil::mapToOrderResponse)
+                        .toList();
+
+        long processingItems =
+                orderRepository.countByStatus(OrderStatus.PENDING)
+                        + orderRepository.countByStatus(OrderStatus.CONFIRMED)
+                        + orderRepository.countByStatus(OrderStatus.SHIPPING);
+
+        return new OrderPageResponse(
+                items,
+                orders.getNumber(),
+                orders.getSize(),
+                orders.getTotalPages(),
+                orders.getTotalElements(),
+                processingItems
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderReviewItemResponse> getReviewItems(Long orderId) {
+
+        Order order =
+                orderRepository.findById(orderId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Order not found"
+                                )
+                        );
+
+        return order.getOrderItems()
+                .stream()
+                .map(orderItem -> {
+                    Book book = orderItem.getBook();
+
+                    return OrderReviewItemResponse.builder()
+                            .orderId(order.getId())
+                            .orderStatus(order.getStatus())
+                            .orderItemId(orderItem.getId())
+                            .bookId(book != null ? book.getId() : null)
+                            .title(book != null ? book.getTitle() : null)
+                            .imageUrl(book != null ? book.getImageUrl() : null)
+                            .authorName(
+                                    book != null && book.getAuthor() != null
+                                            ? book.getAuthor().getAuthorName()
+                                            : null
+                            )
+                            .categoryName(
+                                    book != null && book.getCategory() != null
+                                            ? book.getCategory().getCategoryName()
+                                            : null
+                            )
+                            .quantity(orderItem.getQuantity())
+                            .price(orderItem.getPrice())
+                            .build();
+                })
+                .toList();
     }
 }

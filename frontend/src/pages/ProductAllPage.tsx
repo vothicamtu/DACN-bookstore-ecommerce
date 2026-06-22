@@ -127,6 +127,7 @@ export default function ProductAllPage() {
 	const [appliedKeyword, setAppliedKeyword] = useState('');
 	const categoryQuery = searchParams.get('category') ?? '';
 	const sortQuery = searchParams.get('sort') ?? '';
+	const keywordQuery = searchParams.get('keyword') ?? '';
 	const headerCategories: HeaderCategory[] = categories.map((category) => ({
 		label: category.categoryName,
 		value: category.categoryName,
@@ -222,6 +223,13 @@ export default function ProductAllPage() {
 		setSort('newest');
 		goToBooks({ sort: 'newest' });
 	}
+
+	useEffect(() => {
+		if (keywordQuery) {
+			setKeyword(keywordQuery);
+			setAppliedKeyword(keywordQuery);
+		}
+	}, [keywordQuery]);
 
 	useEffect(() => {
 		fetchCategories();

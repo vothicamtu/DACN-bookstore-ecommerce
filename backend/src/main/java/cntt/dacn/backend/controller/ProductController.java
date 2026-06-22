@@ -45,6 +45,7 @@ public class ProductController {
                 buildSpecification(category, minPrice, maxPrice, minRating, keyword),
                 pageable
         );
+
         var items = products.getContent()
                 .stream()
                 .map(MapperUtil::mapToBookResponse)

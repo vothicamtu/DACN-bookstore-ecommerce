@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
 :root {
   --bookland-bg: #ffffff;
   --bookland-surface: #fffaf0;
@@ -12,6 +14,19 @@
 
 * {
   box-sizing: border-box;
+  font-family: 'Manrope', sans-serif !important;
+}
+
+*::before,
+*::after,
+html,
+body,
+#root,
+button,
+input,
+select,
+textarea {
+  font-family: 'Manrope', sans-serif !important;
 }
 
 body {
@@ -68,6 +83,13 @@ input {
   color: var(--bookland-muted);
   font-size: 0.95rem;
   font-weight: 600;
+  cursor: pointer;
+}
+
+.bookland-header__brand {
+  border: 0;
+  background: transparent;
+  padding: 0;
   cursor: pointer;
 }
 
@@ -216,6 +238,84 @@ input {
 .bookland-header__iconButton:hover {
   background: var(--bookland-surface);
   border-color: var(--bookland-border);
+}
+
+.bookland-header__cartWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.bookland-header__cartBadge {
+  position: absolute;
+  top: -4px;
+  right: -5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #c83c32;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 2px 7px rgba(137, 31, 24, 0.28);
+}
+
+.bookland-header__account {
+  position: relative;
+}
+
+.bookland-header__accountMenu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  min-width: 150px;
+  padding: 8px;
+  border: 1px solid var(--bookland-border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(70, 45, 16, 0.14);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.bookland-header__account:hover .bookland-header__accountMenu,
+.bookland-header__account:focus-within .bookland-header__accountMenu {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.bookland-header__accountLink {
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--bookland-text);
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.bookland-header__accountLink:hover,
+.bookland-header__accountLink:focus-visible {
+  background: var(--bookland-surface);
+  color: #8d5f1e;
+  outline: none;
+}
+
+.bookland-header__accountButton {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
 }
 
 .bookland-loginPrompt {
@@ -389,4 +489,52 @@ input {
   .bookland-footer__inner {
     grid-template-columns: 1fr;
   }
+}
+
+.bookland-homePlaceholder {
+  display: flex;
+  min-height: 62vh;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 70px 20px;
+  background: linear-gradient(135deg, #fffdf8, #f7ecd0);
+  text-align: center;
+}
+
+.bookland-homePlaceholder > span {
+  color: #a66f29;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+}
+
+.bookland-homePlaceholder h1 {
+  max-width: 700px;
+  margin: 14px 0;
+  font-family: Georgia, serif;
+  font-size: clamp(38px, 6vw, 68px);
+  font-weight: 600;
+}
+
+.bookland-homePlaceholder p {
+  color: var(--bookland-muted);
+}
+
+.bookland-homePlaceholder button {
+  margin-top: 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #96611f;
+  padding: 14px 24px;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.checkout-summary__terms a {
+  color: #95611f;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }

@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Email;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class CreateOrderRequest {
 
@@ -27,4 +29,6 @@ public class CreateOrderRequest {
     private String paymentMethod;
 
     private String note;
+
+    private List<Long> cartItemIds;
 }
