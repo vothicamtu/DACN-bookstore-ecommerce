@@ -11,6 +11,7 @@ import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import OrderHistoryDetailPage from "./pages/OrderHistoryDetailPage";
+import TermsPrivacyPage from "./pages/TermsPrivacyPage";
 
 const App: React.FC = () => {
   return (
@@ -27,6 +28,7 @@ const App: React.FC = () => {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/checkout/success" element={<OrderSuccessPage />} />
           <Route path="/orders/:id" element={<OrderHistoryDetailPage />} />
+          <Route path="/terms-and-privacy" element={<TermsPrivacyPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -19,7 +19,7 @@ public class MapperUtil {
     private MapperUtil() {
     }
 
-    public static BookResponse mapToBookResponse( Book book) {
+    public static BookResponse mapToBookResponse(Book book) {
 
         return BookResponse.builder()
 
@@ -53,11 +53,27 @@ public class MapperUtil {
 
                 .soldCount(book.getSoldCount())
 
+                .categoryId(
+
+                        book.getCategory() != null
+                                ? book.getCategory()
+                                .getId()
+                                : null
+                )
+
                 .categoryName(
 
                         book.getCategory() != null
                                 ? book.getCategory()
-                                  .getCategoryName()
+                                .getCategoryName()
+                                : null
+                )
+
+                .authorId(
+
+                        book.getAuthor() != null
+                                ? book.getAuthor()
+                                .getId()
                                 : null
                 )
 
@@ -65,7 +81,15 @@ public class MapperUtil {
 
                         book.getAuthor() != null
                                 ? book.getAuthor()
-                                  .getAuthorName()
+                                .getAuthorName()
+                                : null
+                )
+
+                .publisherId(
+
+                        book.getPublisher() != null
+                                ? book.getPublisher()
+                                .getId()
                                 : null
                 )
 
@@ -73,7 +97,7 @@ public class MapperUtil {
 
                         book.getPublisher() != null
                                 ? book.getPublisher()
-                                  .getPublisherName()
+                                .getPublisherName()
                                 : null
                 )
 
@@ -169,6 +193,10 @@ public class MapperUtil {
                 .status(order.getStatus())
                 .shippingAddress(order.getShippingAddress())
                 .phoneNumber(order.getPhoneNumber())
+                .customerName(order.getCustomerName())
+                .customerEmail(order.getCustomerEmail())
+                .shippingMethod(order.getShippingMethod())
+                .paymentMethod(order.getPaymentMethod())
                 .note(order.getNote())
                 .createdAt(order.getCreatedAt())
                 .build();

@@ -40,6 +40,14 @@ public class Order {
 
     private String phoneNumber;
 
+    private String customerName;
+
+    private String customerEmail;
+
+    private String shippingMethod;
+
+    private String paymentMethod;
+
     private String note;
 
     private LocalDateTime createdAt;

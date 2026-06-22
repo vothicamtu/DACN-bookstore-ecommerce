@@ -22,6 +22,16 @@ export interface CartResponse {
     totalAmount: number;
 }
 
+export const CART_UPDATED_EVENT = "bookland:cart-updated";
+
+export function notifyCartUpdated(cart?: CartResponse) {
+    if (typeof window !== "undefined") {
+        window.dispatchEvent(
+            new CustomEvent(CART_UPDATED_EVENT, { detail: { cart } })
+        );
+    }
+}
+
 export async function getCart() {
     const response = await axiosClient.get<ApiResponse<CartResponse>>("/cart");
     return response.data.data;
@@ -32,6 +42,7 @@ export async function addToCart(bookId: number, quantity = 1) {
         bookId,
         quantity,
     });
+    notifyCartUpdated(response.data.data);
     return response.data.data;
 }
 
@@ -40,13 +51,16 @@ export async function updateCartItem(cartItemId: number, quantity: number) {
         cartItemId,
         quantity,
     });
+    notifyCartUpdated(response.data.data);
     return response.data.data;
 }
 
 export async function removeCartItem(cartItemId: number) {
     await axiosClient.delete<ApiResponse<null>>(`/cart/remove/${cartItemId}`);
+    notifyCartUpdated();
 }
 
 export async function clearCart() {
     await axiosClient.delete<ApiResponse<null>>("/cart/clear");
+    notifyCartUpdated();
 }

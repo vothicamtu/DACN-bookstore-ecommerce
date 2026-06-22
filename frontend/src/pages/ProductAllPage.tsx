@@ -37,11 +37,11 @@ type ApiProduct = {
 };
 
 type ApiProductPage = {
-	items: ApiProduct[];
+	content: ApiProduct[];
 	page: number;
 	size: number;
 	totalPages: number;
-	totalItems: number;
+	totalElements: number;
 };
 
 const PRODUCTS_PER_PAGE = 9;
@@ -127,6 +127,7 @@ export default function ProductAllPage() {
 	const [appliedKeyword, setAppliedKeyword] = useState('');
 	const categoryQuery = searchParams.get('category') ?? '';
 	const sortQuery = searchParams.get('sort') ?? '';
+	const keywordQuery = searchParams.get('keyword') ?? '';
 	const headerCategories: HeaderCategory[] = categories.map((category) => ({
 		label: category.categoryName,
 		value: category.categoryName,
@@ -224,6 +225,13 @@ export default function ProductAllPage() {
 	}
 
 	useEffect(() => {
+		if (keywordQuery) {
+			setKeyword(keywordQuery);
+			setAppliedKeyword(keywordQuery);
+		}
+	}, [keywordQuery]);
+
+	useEffect(() => {
 		fetchCategories();
 	}, []);
 
@@ -282,9 +290,9 @@ export default function ProductAllPage() {
 			.then((response) => {
 				if (isMounted) {
 					const data = response.data as ApiProductPage;
-					setProducts(data.items.map(mapProduct));
+					setProducts(data.content.map(mapProduct));
 					setTotalPages(data.totalPages);
-					setTotalItems(data.totalItems);
+					setTotalItems(data.totalElements);
 					setError('');
 				}
 			})

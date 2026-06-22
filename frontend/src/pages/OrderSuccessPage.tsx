@@ -1,7 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
+import { CheckCircle, ShoppingBag, ShoppingCart } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import type { OrderResponse } from "../services/orderService";
+import "../styles/order-success.css";
 
 type LocationState = {
   order?: OrderResponse;
@@ -12,52 +14,56 @@ export default function OrderSuccessPage() {
   const order = (location.state as LocationState | null)?.order;
 
   return (
-    <div className="min-h-screen bg-[#F7F2E7]">
+    <div className="order-success-page">
       <Header />
 
-      <main className="max-w-[900px] mx-auto px-6 py-16">
-        <section className="bg-white border border-[#E5D8BA] rounded-[28px] p-10 text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl text-green-700">
-            ✓
+      <main className="order-success-page__main">
+        <section className="order-success__card">
+          {/* Icon */}
+          <div className="order-success__icon">
+            <CheckCircle size={34} strokeWidth={2} />
           </div>
 
-          <h1 className="text-4xl font-semibold text-[#2b1f12]">
-            Đặt hàng thành công
-          </h1>
+          <h1>Đặt hàng thành công</h1>
 
-          <p className="mt-4 text-[#7f6a55]">
-            Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được ghi nhận và đang chờ xử lý.
+          <p>
+            Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được ghi nhận
+            và đang chờ xử lý.
           </p>
 
           {order ? (
-            <div className="mt-8 rounded-2xl border border-[#E5D8BA] bg-[#FBF6EA] p-6 text-left">
-              <div className="flex justify-between">
+            <div className="order-success__summary">
+              <div className="order-success__summary-row">
                 <span>Mã đơn hàng</span>
-                <strong>#{order.orderId}</strong>
+                <strong className="order-id">#{order.orderId}</strong>
               </div>
-              <div className="mt-3 flex justify-between">
+
+              <div className="order-success__summary-row">
                 <span>Tổng tiền</span>
-                <strong>{Number(order.totalAmount).toLocaleString("vi-VN")}đ</strong>
+                <strong className="amount">
+                  {Number(order.totalAmount).toLocaleString("vi-VN")}đ
+                </strong>
               </div>
-              <div className="mt-3 flex justify-between">
+
+              <div className="order-success__summary-row">
                 <span>Trạng thái</span>
-                <strong>Đang xử lý</strong>
+                <span className="order-success__badge">Đang xử lý</span>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <p className="order-success__empty">
+              Không tìm thấy thông tin đơn hàng.
+            </p>
+          )}
 
-          <div className="mt-8 flex justify-center gap-4">
-            <Link
-              to="/"
-              className="rounded-2xl bg-[#767F9E] px-6 py-4 font-semibold text-white"
-            >
+          <div className="order-success__actions">
+            <Link to="/" className="order-success__btn-primary">
+              <ShoppingBag size={17} />
               Tiếp tục mua hàng
             </Link>
-            <Link
-              to="/cart"
-              className="rounded-2xl border border-[#E5D8BA] px-6 py-4 font-semibold text-[#7f6a55]"
-            >
-              Về giỏ hàng
+            <Link to="/orders" className="order-success__btn-secondary">
+              <ShoppingCart size={17} />
+              Xem lịch sử đơn hàng
             </Link>
           </div>
         </section>

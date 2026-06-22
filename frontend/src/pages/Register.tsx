@@ -1,6 +1,7 @@
 import React, { FormEvent, useState } from 'react';
-import { Search, Heart, ShoppingCart, User, Facebook } from 'lucide-react';
+import { Facebook } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
 import '../styles/auth.css';
 
 export default function Register(): React.JSX.Element {
@@ -31,7 +32,10 @@ export default function Register(): React.JSX.Element {
                 alert(data.message);
                 navigate('/login');
             } else {
-                alert(data.message || 'Đăng ký thất bại');
+                const validationMessage = Object.values(data).find(
+                    (value): value is string => typeof value === 'string'
+                );
+                alert(data.message || validationMessage || 'Đăng ký thất bại');
             }
         } catch (error) {
             alert('Lỗi: Không thể kết nối đến máy chủ hệ thống!');
@@ -40,32 +44,7 @@ export default function Register(): React.JSX.Element {
 
     return (
         <div className="auth-page">
-            {/* HEADER */}
-            <header className="auth-header">
-                <div className="auth-header__logo">BookLand</div>
-
-                <nav className="auth-header__nav">
-                    <a href="#" className="auth-header__nav-link--active">Cửa hàng</a>
-                    <a href="#" className="auth-header__nav-link">Danh mục</a>
-                    <a href="#" className="auth-header__nav-link">Nổi bật</a>
-                    <a href="#" className="auth-header__nav-link">Bán chạy</a>
-                    <a href="#" className="auth-header__nav-link">Sách mới</a>
-                </nav>
-
-                <div className="auth-header__actions">
-                    <div className="auth-header__search-box">
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm sách..."
-                            className="auth-header__search-input"
-                        />
-                        <Search className="auth-header__search-icon" />
-                    </div>
-                    <Heart className="auth-header__icon" />
-                    <ShoppingCart className="auth-header__icon" />
-                    <User className="auth-header__icon" />
-                </div>
-            </header>
+            <Header />
 
             {/* MAIN CONTENT */}
             <main className="auth-main">
