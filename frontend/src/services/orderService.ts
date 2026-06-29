@@ -12,6 +12,7 @@ export interface OrderItemResponse {
     orderItemId: number;
     bookId: number;
     title: string;
+    imageUrl?: string | null;
     quantity: number;
     price: number;
     totalPrice: number;
@@ -64,5 +65,10 @@ export async function getMyOrders(page = 0, size = 10) {
         "/orders/my-orders",
         { params: { page, size } }
     );
+    return response.data.data;
+}
+
+export async function getOrderById(orderId: number | string) {
+    const response = await axiosClient.get<ApiResponse<OrderResponse>>(`/orders/${orderId}`);
     return response.data.data;
 }

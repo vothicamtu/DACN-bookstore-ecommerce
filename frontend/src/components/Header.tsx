@@ -280,14 +280,19 @@ export default function Header({
                     </button>
                     <div className="bookland-header__accountMenu" role="menu">
                         {hasAuthToken() ? (
-                            <button
-                                type="button"
-                                className="bookland-header__accountLink bookland-header__accountButton"
-                                role="menuitem"
-                                onClick={handleLogout}
-                            >
-                                Đăng xuất
-                            </button>
+                            <>
+                                <Link to="/orders" className="bookland-header__accountLink" role="menuitem">
+                                    Lịch sử đơn hàng
+                                </Link>
+                                <button
+                                    type="button"
+                                    className="bookland-header__accountLink bookland-header__accountButton"
+                                    role="menuitem"
+                                    onClick={handleLogout}
+                                >
+                                    Đăng xuất
+                                </button>
+                            </>
                         ) : (
                             <>
                                 <Link to="/login" className="bookland-header__accountLink" role="menuitem">

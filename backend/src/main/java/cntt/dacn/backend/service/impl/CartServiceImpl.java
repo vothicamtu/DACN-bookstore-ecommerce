@@ -7,7 +7,7 @@ import cntt.dacn.backend.exception.ResourceNotFoundException;
 import cntt.dacn.backend.repository.*;
 import cntt.dacn.backend.service.CartService;
 import cntt.dacn.backend.mapper.MapperUtil;
-import cntt.dacn.backend.util.SecurityUtil;
+import cntt.dacn.backend.utils.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

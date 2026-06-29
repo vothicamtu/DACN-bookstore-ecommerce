@@ -4,26 +4,10 @@ import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../styles/OrderHistoryPage.css';
+import { getMyOrders, type OrderResponse } from '../services/orderService';
 
-type ApiOrder = {
-  id?: number | null;
-  orderId?: number | null;
-  totalAmount?: number | null;
-  orderStatus?: string | null;
-  status?: string | null;
-  createdAt: string;
-};
+type ApiOrder = OrderResponse;
 
-type ApiOrderPage = {
-  items: ApiOrder[];
-  page: number;
-  size: number;
-  totalPages: number;
-  totalItems: number;
-  processingItems: number;
-};
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
 const ORDERS_PER_PAGE = 5;
 
 const currencyFormatter = new Intl.NumberFormat('vi-VN', {
@@ -39,15 +23,15 @@ const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
 });
 
 function getOrderId(order: ApiOrder) {
-  return order.id ?? order.orderId ?? 0;
+  return order.orderId ?? 0;
 }
 
 function getOrderTotal(order: ApiOrder) {
-  return order.totalAmount ?? order.totalAmount ?? 0;
+  return order.totalAmount ?? 0;
 }
 
 function getOrderStatus(order: ApiOrder) {
-  return order.orderStatus ?? order.status ?? 'PENDING';
+  return order.status ?? 'PENDING';
 }
 
 function formatOrderDate(date: string) {
@@ -73,44 +57,30 @@ const OrderHistoryPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
-  const [processingItems, setProcessingItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const controller = new AbortController();
-    const params = new URLSearchParams({
-      page: String(currentPage - 1),
-      size: String(ORDERS_PER_PAGE),
-    });
+    let cancelled = false;
 
     setLoading(true);
 
-    fetch(`${API_BASE_URL}/api/orders?${params.toString()}`, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Không lấy được danh sách đơn hàng');
-        }
-
-        return response.json() as Promise<ApiOrderPage>;
-      })
+    getMyOrders(currentPage - 1, ORDERS_PER_PAGE)
       .then((data) => {
-        setOrders(data.items);
+        if (cancelled) return;
+        setOrders(data.content);
         setTotalPages(data.totalPages);
-        setTotalItems(data.totalItems);
-        setProcessingItems(data.processingItems);
+        setTotalItems(Number(data.totalElements));
         setError('');
       })
       .catch((err: Error) => {
-        if (err.name !== 'AbortError') {
-          setError(err.message);
-        }
+        if (!cancelled) setError(err.message ?? 'Không lấy được danh sách đơn hàng');
       })
       .finally(() => {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       });
 
-    return () => controller.abort();
+    return () => { cancelled = true; };
   }, [currentPage]);
 
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * ORDERS_PER_PAGE + 1;
@@ -131,10 +101,6 @@ const OrderHistoryPage: React.FC = () => {
           <div className="stat-card">
             <div className="stat-label">TỔNG ĐƠN HÀNG</div>
             <div className="stat-value">{totalItems}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-label">ĐANG XỬ LÝ</div>
-            <div className="stat-value">{processingItems}</div>
           </div>
         </section>
 

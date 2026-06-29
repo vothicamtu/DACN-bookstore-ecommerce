@@ -1,4 +1,5 @@
 import axiosClient from "../api/axiosClient";
+import axios from "axios";
 
 export interface ApiResponse<T> {
     success: boolean;
@@ -23,6 +24,30 @@ export interface CartResponse {
 }
 
 export const CART_UPDATED_EVENT = "bookland:cart-updated";
+
+export function hasAuthToken() {
+    return Boolean(
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("accessToken")
+    );
+}
+
+export function isAuthError(error: unknown) {
+    return axios.isAxiosError(error) && (
+        error.response?.status === 401 ||
+        error.response?.status === 403
+    );
+}
+
+export function getCartErrorMessage(error: unknown, fallback: string) {
+    if (axios.isAxiosError(error)) {
+        const message = (error.response?.data as { message?: string } | undefined)?.message;
+        return message || fallback;
+    }
+
+    return fallback;
+}
 
 export function notifyCartUpdated(cart?: CartResponse) {
     if (typeof window !== "undefined") {
