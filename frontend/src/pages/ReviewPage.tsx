@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
+import { Star } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -22,6 +23,9 @@ type ReviewItem = {
   categoryName?: string | null;
   quantity: number;
   price: number;
+  reviewed: boolean;
+  existingRating?: number | null;
+  existingComment?: string | null;
 };
 
 const ReviewPage: React.FC = () => {
@@ -46,7 +50,8 @@ const ReviewPage: React.FC = () => {
     axiosClient
       .get<ApiResponse<ReviewItem[]>>(`/orders/${orderId}/review-items`)
       .then((response) => {
-        setItems(response.data.data ?? []);
+        const data: ReviewItem[] = response.data.data ?? [];
+        setItems(data);
         setError('');
       })
       .catch(() => {
@@ -94,10 +99,11 @@ const ReviewPage: React.FC = () => {
         comment: comments[item.orderItemId] ?? '',
       })
       .then(() => {
-        setSubmitMessages((current) => ({
-          ...current,
-          [item.orderItemId]: 'Đã gửi đánh giá thành công.',
-        }));
+        setItems((prev) => prev.map((i) =>
+          i.orderItemId === item.orderItemId
+            ? { ...i, reviewed: true, existingRating: ratings[item.orderItemId], existingComment: comments[item.orderItemId] ?? '' }
+            : i
+        ));
       })
       .catch((err) => {
         setSubmitMessages((current) => ({
@@ -115,7 +121,13 @@ const ReviewPage: React.FC = () => {
       <Header />
 
       <main className="review-main">
-        <nav className="crumbs">Trang chủ &nbsp; &gt; &nbsp; Đơn hàng của tôi &nbsp; &gt; &nbsp; Viết đánh giá</nav>
+        <nav className="crumbs">
+          <Link to="/">Trang chủ</Link>
+          &nbsp; &gt; &nbsp;
+          <Link to="/orders">Đơn hàng của tôi</Link>
+          &nbsp; &gt; &nbsp;
+          Viết đánh giá
+        </nav>
 
         <section className="review-card">
           <header className="review-card__head">
@@ -130,8 +142,10 @@ const ReviewPage: React.FC = () => {
             <div className="review-state">Đơn hàng này chưa có sản phẩm để đánh giá.</div>
           ) : (
             <div className="review-items">
-              {items.map((item) => (
-                <div className="review-item" key={item.orderItemId}>
+              {items.map((item) => {
+                const isReviewed = item.reviewed;
+                return (
+                <div className={`review-item${isReviewed ? ' is-reviewed' : ''}`} key={item.orderItemId}>
                   <div className="product-row">
                     <img
                       src={item.imageUrl || '/src/assets/placeholder-book.png'}
@@ -148,6 +162,21 @@ const ReviewPage: React.FC = () => {
 
                   <hr />
 
+                  {isReviewed ? (
+                    <div className="reviewed-summary">
+                      <div className="stars reviewed-stars">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span key={star} className={`star ${star <= (item.existingRating ?? 0) ? 'is-active' : ''}`}>
+                            <Star size={24} fill={star <= (item.existingRating ?? 0) ? 'currentColor' : 'none'} />
+                          </span>
+                        ))}
+                      </div>
+                      {item.existingComment && (
+                        <p className="reviewed-comment">{item.existingComment}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <>
                   <div className="rating-row">
                     <label className="rating-label">Bạn đánh giá cuốn sách này thế nào?</label>
                     <div className="stars">
@@ -158,7 +187,7 @@ const ReviewPage: React.FC = () => {
                           className={`star ${star <= (ratings[item.orderItemId] ?? 0) ? 'is-active' : ''}`}
                           onClick={() => setItemRating(item.orderItemId, star)}
                         >
-                          ★
+                          <Star size={24} fill={star <= (ratings[item.orderItemId] ?? 0) ? 'currentColor' : 'none'} />
                         </button>
                       ))}
                     </div>
@@ -188,8 +217,11 @@ const ReviewPage: React.FC = () => {
                   {submitMessages[item.orderItemId] ? (
                     <div className="review-submitMessage">{submitMessages[item.orderItemId]}</div>
                   ) : null}
+                    </>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
