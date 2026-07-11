@@ -25,12 +25,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        http
-                .csrf(csrf -> csrf.disable())
-
-                .cors(cors -> {})
-
+        http.csrf(csrf -> csrf.disable()).cors(cors -> {
+                })
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -53,7 +49,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/books/**",
                                 "/api/categories/**",
-                                "/api/products/**"
+                                "/api/products/**",
+                                "/api/ai-assistant/**"
                         ).permitAll()
 
                         // Admin APIs

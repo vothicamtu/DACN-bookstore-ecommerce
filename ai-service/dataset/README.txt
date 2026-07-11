@@ -1,1 +1,0 @@
-* Chứa dữ liệu đầu vào để train hoặc test model

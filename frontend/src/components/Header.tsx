@@ -1,13 +1,15 @@
 import '../styles/bookland.css';
-import { Search, Heart, ShoppingCart, User } from 'lucide-react';
+import { Bot, Search, Heart, ShoppingCart, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import {
     CART_UPDATED_EVENT,
     getCart,
     type CartResponse,
 } from '../services/cartService';
 import axiosClient from '../api/axiosClient';
+
+const AiBookAssistant = lazy(() => import('./AiBookAssistant'));
 
 export type HeaderNavKey = 'store' | 'category' | 'bestseller' | 'newest';
 
@@ -43,6 +45,7 @@ export default function Header({
                                }: HeaderProps) {
     const navigate = useNavigate();
     const [cartLoginPromptOpen, setCartLoginPromptOpen] = useState(false);
+    const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
     const [cartItemCount, setCartItemCount] = useState(0);
     const [internalKeyword, setInternalKeyword] = useState("");
     const [internalCategories, setInternalCategories] = useState<HeaderCategory[]>([]);
@@ -247,6 +250,15 @@ export default function Header({
 
                 <button
                     type="button"
+                    className="bookland-header__iconButton bookland-header__aiButton"
+                    aria-label="Open AI Book Assistant"
+                    onClick={() => setAiAssistantOpen(true)}
+                >
+                    <Bot className="bookland-icon" />
+                </button>
+
+                <button
+                    type="button"
                     className="bookland-header__iconButton"
                     aria-label="Yêu thích"
                 >
@@ -316,6 +328,15 @@ export default function Header({
                         </div>
                     </div>
                 </div>
+            ) : null}
+
+            {aiAssistantOpen ? (
+                <Suspense fallback={null}>
+                    <AiBookAssistant
+                        open={aiAssistantOpen}
+                        onClose={() => setAiAssistantOpen(false)}
+                    />
+                </Suspense>
             ) : null}
         </>
     );

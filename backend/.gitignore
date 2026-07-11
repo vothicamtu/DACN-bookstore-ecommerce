@@ -6,6 +6,7 @@
 # Local/Sensitive Configurations (CRITICAL)
 # -------------------------------------------------------------------------
 # Local application properties (preserves user's custom ignore rule)
+.env
 src/main/resources/application.properties
 src/main/resources/application-local.properties
 src/main/resources/application-dev.properties
