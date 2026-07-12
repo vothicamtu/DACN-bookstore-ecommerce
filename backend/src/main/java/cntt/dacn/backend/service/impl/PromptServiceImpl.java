@@ -29,7 +29,7 @@ public class PromptServiceImpl implements PromptService {
         StringBuilder answer = new StringBuilder(promptTemplateManager.getTemplate("recommendation"));
         answer.append("\n\n");
 
-        for (int index = 0; index < Math.min(books.size(), 3); index++) {
+        for (int index = 0; index < books.size(); index++) {
             var book = books.get(index).getBook();
             answer.append(index + 1)
                     .append(". **")

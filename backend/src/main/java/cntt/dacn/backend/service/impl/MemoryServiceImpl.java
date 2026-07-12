@@ -48,9 +48,13 @@ public class MemoryServiceImpl implements MemoryService {
             memory.setGoal("learning");
         }
 
-        if (normalized.contains("thieu nhi") || normalized.contains("tre em")) {
-            memory.setAgeGroup("children");
-            memory.setCategory("Thiếu nhi");
+        // Extract category từ message — override nếu có category mới
+        String category = extractCategory(normalized);
+        if (category != null) {
+            memory.setCategory(category);
+            if (category.equals("Thiếu nhi")) {
+                memory.setAgeGroup("children");
+            }
         }
 
         BigDecimal budget = extractBudget(normalized);
@@ -63,6 +67,18 @@ public class MemoryServiceImpl implements MemoryService {
         } else if (normalized.contains("tieng viet")) {
             memory.setLanguage("Vietnamese");
         }
+    }
+
+    private String extractCategory(String normalized) {
+        if (normalized.contains("kinh te") || normalized.contains("tai chinh") || normalized.contains("dau tu")) return "Kinh tế";
+        if (normalized.contains("thieu nhi") || normalized.contains("tre em")) return "Thiếu nhi";
+        if (normalized.contains("van hoc") || normalized.contains("tieu thuyet") || normalized.contains("truyen")) return "Văn học";
+        if (normalized.contains("ky nang") || normalized.contains("phat trien ban than")) return "Kỹ năng";
+        if (normalized.contains("lap trinh") || normalized.contains("cong nghe") || normalized.contains("khoa hoc")) return "Khoa học - Công nghệ";
+        if (normalized.contains("lich su") || normalized.contains("dia ly")) return "Lịch sử - Địa lý";
+        if (normalized.contains("ngoai ngu") || normalized.contains("tieng anh") || normalized.contains("tieng nhat")) return "Ngoại ngữ";
+        if (normalized.contains("giao khoa") || normalized.contains("tham khao") || normalized.contains("hoc sinh")) return "Giáo khoa";
+        return null;
     }
 
     @Override
@@ -91,16 +107,25 @@ public class MemoryServiceImpl implements MemoryService {
     }
 
     private BigDecimal extractBudget(String normalized) {
-        if (normalized.contains("200")) {
-            return BigDecimal.valueOf(200000);
+        // Xóa dấu chấm/phẩy ngăn cách hàng nghìn rồi tìm số
+        String cleaned = normalized.replaceAll("[.,]", "");
+
+        // Pattern: "duoi Xd", "duoi Xk", "duoi X dong", "ngan sach X", "X000d"...
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("(\\d{3,7})")
+                .matcher(cleaned);
+
+        long maxVal = 0;
+        while (m.find()) {
+            long val = Long.parseLong(m.group(1));
+            // Nếu số < 1000 thì đơn vị là nghìn (vd: "200k" → 200000)
+            if (val < 1000) val *= 1000;
+            if (val > maxVal && val <= 10_000_000) {
+                maxVal = val;
+            }
         }
-        if (normalized.contains("300")) {
-            return BigDecimal.valueOf(300000);
-        }
-        if (normalized.contains("500")) {
-            return BigDecimal.valueOf(500000);
-        }
-        return null;
+
+        return maxVal > 0 ? BigDecimal.valueOf(maxVal) : null;
     }
 
     private String normalize(String value) {

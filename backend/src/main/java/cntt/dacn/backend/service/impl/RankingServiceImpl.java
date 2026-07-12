@@ -35,20 +35,49 @@ public class RankingServiceImpl implements RankingService {
 
     @Override
     public List<RankedBook> rank(List<Book> books, AiIntent intent, AiConversationMemory memory) {
+        // newest không có author filter: sort thẳng theo publishDate
+        if (intent.isNewest() && intent.getAuthor() == null) {
+            return books.stream()
+                    .filter(book -> book.getPublishDate() != null)
+                    .sorted(Comparator.comparing(Book::getPublishDate).reversed())
+                    .limit(8)
+                    .map(book -> RankedBook.builder().book(book).score(0).build())
+                    .toList();
+        }
+
+        // bestSeller không có author filter: sort thẳng theo soldCount
+        if (intent.isBestSeller() && intent.getAuthor() == null) {
+            return books.stream()
+                    .filter(book -> book.getSoldCount() != null)
+                    .sorted(Comparator.comparing(Book::getSoldCount).reversed())
+                    .limit(8)
+                    .map(book -> RankedBook.builder().book(book).score(book.getSoldCount()).build())
+                    .toList();
+        }
+
         return books.stream()
                 .filter(book -> isBrowseIntent(intent) || matchesQuery(book, intent.getQuery()))
+                // loại hẳn sách vượt giá khi maxPrice là filter chính
+                .filter(book -> intent.getMaxPrice() == null
+                        || book.getPrice() == null
+                        || book.getPrice().compareTo(intent.getMaxPrice()) <= 0)
                 .map(book -> RankedBook.builder()
                         .book(book)
                         .score(score(book, intent, memory))
                         .build())
-                .filter(rankedBook -> rankedBook.getScore() > 0 || intent.isBestSeller() || intent.isNewest())
+                .filter(rankedBook -> rankedBook.getScore() > 0
+                        || intent.isBestSeller()
+                        || intent.isNewest()
+                        || intent.getMaxPrice() != null)
                 .sorted(Comparator.comparing(RankedBook::getScore).reversed())
                 .limit(8)
                 .toList();
     }
 
     private boolean isBrowseIntent(AiIntent intent) {
-        return intent.isBestSeller() || intent.isNewest() || value(intent.getQuery()).isBlank();
+        return intent.isBestSeller() || intent.isNewest()
+                || intent.getMaxPrice() != null
+                || value(intent.getQuery()).isBlank();
     }
 
     private boolean matchesQuery(Book book, String query) {
@@ -76,8 +105,19 @@ public class RankingServiceImpl implements RankingService {
         String publisher = book.getPublisher() == null ? "" : value(book.getPublisher().getPublisherName());
         String category = book.getCategory() == null ? "" : value(book.getCategory().getCategoryName());
 
+        // Khi intent có tác giả cụ thể: match → +21đ, không match → loại hẳn
+        if (intent.getAuthor() != null && !intent.getAuthor().isBlank()) {
+            String intentAuthor = value(intent.getAuthor());
+            if (author.contains(intentAuthor)) {
+                score += AUTHOR_WEIGHT * 3;
+            } else {
+                return -1;
+            }
+        } else {
+            score += contains(author, query) ? AUTHOR_WEIGHT : fuzzyScore(author, query);
+        }
+
         score += contains(title, query) ? TITLE_WEIGHT : fuzzyScore(title, query);
-        score += contains(author, query) ? AUTHOR_WEIGHT : fuzzyScore(author, query);
         score += contains(publisher, query) ? PUBLISHER_WEIGHT : 0;
         score += contains(category, query) ? CATEGORY_WEIGHT : 0;
 
