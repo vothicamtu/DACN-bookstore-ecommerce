@@ -1,1 +1,0 @@
-- Scripts insert dữ liệu mẫu để test

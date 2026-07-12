@@ -1,13 +1,15 @@
 import '../styles/bookland.css';
-import { Search, Heart, ShoppingCart, User } from 'lucide-react';
+import { Bot, Search, Heart, ShoppingCart, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import {
     CART_UPDATED_EVENT,
     getCart,
     type CartResponse,
 } from '../services/cartService';
 import axiosClient from '../api/axiosClient';
+
+const AiBookAssistant = lazy(() => import('./AiBookAssistant'));
 
 export type HeaderNavKey = 'store' | 'category' | 'bestseller' | 'newest';
 
@@ -43,6 +45,7 @@ export default function Header({
                                }: HeaderProps) {
     const navigate = useNavigate();
     const [cartLoginPromptOpen, setCartLoginPromptOpen] = useState(false);
+    const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
     const [cartItemCount, setCartItemCount] = useState(0);
     const [internalKeyword, setInternalKeyword] = useState("");
     const [internalCategories, setInternalCategories] = useState<HeaderCategory[]>([]);
@@ -247,6 +250,15 @@ export default function Header({
 
                 <button
                     type="button"
+                    className="bookland-header__iconButton bookland-header__aiButton"
+                    aria-label="Open AI Book Assistant"
+                    onClick={() => setAiAssistantOpen(true)}
+                >
+                    <Bot className="bookland-icon" />
+                </button>
+
+                <button
+                    type="button"
                     className="bookland-header__iconButton"
                     aria-label="Yêu thích"
                 >
@@ -280,19 +292,14 @@ export default function Header({
                     </button>
                     <div className="bookland-header__accountMenu" role="menu">
                         {hasAuthToken() ? (
-                            <>
-                                <Link to="/orders" className="bookland-header__accountLink" role="menuitem">
-                                    Lịch sử đơn hàng
-                                </Link>
-                                <button
-                                    type="button"
-                                    className="bookland-header__accountLink bookland-header__accountButton"
-                                    role="menuitem"
-                                    onClick={handleLogout}
-                                >
-                                    Đăng xuất
-                                </button>
-                            </>
+                            <button
+                                type="button"
+                                className="bookland-header__accountLink bookland-header__accountButton"
+                                role="menuitem"
+                                onClick={handleLogout}
+                            >
+                                Đăng xuất
+                            </button>
                         ) : (
                             <>
                                 <Link to="/login" className="bookland-header__accountLink" role="menuitem">
@@ -321,6 +328,15 @@ export default function Header({
                         </div>
                     </div>
                 </div>
+            ) : null}
+
+            {aiAssistantOpen ? (
+                <Suspense fallback={null}>
+                    <AiBookAssistant
+                        open={aiAssistantOpen}
+                        onClose={() => setAiAssistantOpen(false)}
+                    />
+                </Suspense>
             ) : null}
         </>
     );

@@ -1,1 +1,0 @@
-* Các hàm tiện ích cho xử lý dữ liệu và AI

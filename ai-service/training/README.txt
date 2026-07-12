@@ -1,1 +1,0 @@
-- Scripts scikit-learn để huấn luyện mô hình
