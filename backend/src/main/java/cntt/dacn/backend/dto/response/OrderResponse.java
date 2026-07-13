@@ -44,6 +44,8 @@ public class OrderResponse {
 
     private String phoneNumber;
 
+    private String shippingMethod;
+
     private String note;
 
     private LocalDateTime createdAt;

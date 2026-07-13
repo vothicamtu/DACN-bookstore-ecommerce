@@ -8,6 +8,7 @@ import cntt.dacn.backend.dto.response.OrderReviewItemResponse;
 import cntt.dacn.backend.dto.response.PagedResponse;
 import cntt.dacn.backend.entity.*;
 import cntt.dacn.backend.exception.ResourceNotFoundException;
+import cntt.dacn.backend.exception.BadRequestException;
 import cntt.dacn.backend.repository.*;
 import cntt.dacn.backend.service.OrderService;
 import cntt.dacn.backend.mapper.MapperUtil;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +38,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public OrderResponse createOrder(
             CreateOrderRequest request
     ) {
@@ -55,8 +58,22 @@ public class OrderServiceImpl implements OrderService {
                                 )
                         );
 
-        List<CartItem> cartItems =
+        List<CartItem> allCartItems =
                 cartItemRepository.findByCart(cart);
+
+        List<CartItem> cartItems;
+        if (request.getCartItemIds() == null || request.getCartItemIds().isEmpty()) {
+            cartItems = allCartItems;
+        } else {
+            Set<Long> selectedIds = Set.copyOf(request.getCartItemIds());
+            cartItems = allCartItems.stream()
+                    .filter(item -> selectedIds.contains(item.getId()))
+                    .toList();
+
+            if (cartItems.size() != selectedIds.size()) {
+                throw new BadRequestException("Một hoặc nhiều sản phẩm không thuộc giỏ hàng của bạn");
+            }
+        }
 
         if (cartItems.isEmpty()) {
 
@@ -88,6 +105,10 @@ public class OrderServiceImpl implements OrderService {
                 .phoneNumber(
                         request.getPhoneNumber()
                 )
+                .customerName(request.getCustomerName())
+                .customerEmail(request.getCustomerEmail())
+                .shippingMethod(request.getShippingMethod())
+                .paymentMethod(request.getPaymentMethod())
                 .note(request.getNote())
                 .status(OrderStatus.PENDING)
                 .orderItems(new ArrayList<>())
@@ -113,7 +134,7 @@ public class OrderServiceImpl implements OrderService {
 
         orderItemRepository.saveAll(orderItems);
 
-        cartItemRepository.deleteByCart(cart);
+        cartItemRepository.deleteAll(cartItems);
 
         savedOrder.setOrderItems(orderItems);
 

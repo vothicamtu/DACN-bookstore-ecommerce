@@ -1,79 +1,96 @@
+import { ArrowRight } from "lucide-react";
 import type { CartResponse } from "../../services/cartService";
+import type { ShippingMethodValue } from "./ShippingMethod";
 import { resolveImageUrl } from "../../utils/imageUrl";
+import { Link } from "react-router-dom";
 
 interface Props {
   cart: CartResponse | null;
   loading: boolean;
   submitting: boolean;
+  shippingMethod: ShippingMethodValue;
+  acceptedTerms: boolean;
+  onAcceptedTermsChange: (accepted: boolean) => void;
   onSubmit: () => void;
 }
 
-const shippingFee = 25000;
+const currency = new Intl.NumberFormat("vi-VN", {
+  style: "currency",
+  currency: "VND",
+  maximumFractionDigits: 0,
+});
 
 export default function OrderSummary({
   cart,
   loading,
   submitting,
+  shippingMethod,
+  acceptedTerms,
+  onAcceptedTermsChange,
   onSubmit,
 }: Props) {
   const items = cart?.items ?? [];
-  const totalAmount = cart?.totalAmount ?? 0;
-  const finalAmount = totalAmount > 0 ? totalAmount + shippingFee : 0;
+  const subtotal = cart?.totalAmount ?? 0;
+  const shippingFee = subtotal > 0 ? (shippingMethod === "express" ? 50000 : 25000) : 0;
+  const finalAmount = subtotal + shippingFee;
   const disabled = loading || submitting || items.length === 0;
 
   return (
-    <div className="bg-white rounded-[28px] border border-[#E5D8BA] p-8 sticky top-5">
-      <h2 className="text-4xl font-semibold mb-8">Sản phẩm đã chọn</h2>
-
-      <div className="space-y-5">
-        {loading ? (
-          <div className="text-gray-500">Đang tải giỏ hàng...</div>
-        ) : items.length === 0 ? (
-          <div className="text-gray-500">Không có sản phẩm trong giỏ hàng.</div>
-        ) : (
-          items.map((item) => (
-            <div key={item.cartItemId} className="flex gap-4">
-              <img
-                src={resolveImageUrl(item.imageUrl) ?? "/book.jpg"}
-                alt={item.title}
-                className="w-20 h-24 rounded-lg object-cover"
-              />
-
-              <div>
-                <h4>{item.title}</h4>
-                <p>
-                  {item.quantity} x {Number(item.price).toLocaleString("vi-VN")}đ
-                </p>
-              </div>
+    <aside className="checkout-summary">
+      <h2>Sản phẩm đã chọn</h2>
+      <div className="checkout-summary__items">
+        {loading ? <p>Đang tải giỏ hàng...</p> : items.length === 0 ? (
+          <p>Không có sản phẩm trong giỏ hàng.</p>
+        ) : items.map((item) => (
+          <article key={item.cartItemId}>
+            <div className="checkout-summary__cover">
+              {resolveImageUrl(item.imageUrl) ? (
+                <img src={resolveImageUrl(item.imageUrl)} alt={item.title} />
+              ) : <span>BookLand</span>}
             </div>
-          ))
-        )}
+            <div>
+              <strong>{item.title}</strong>
+              <small>SL: {item.quantity}</small>
+              <b>{currency.format(item.totalPrice)}</b>
+            </div>
+          </article>
+        ))}
       </div>
-
-      <div className="border-t mt-8 pt-8">
-        <div className="flex justify-between">
-          <span>Tạm tính</span>
-          <span>{Number(totalAmount).toLocaleString("vi-VN")}đ</span>
-        </div>
-
-        <div className="flex justify-between mt-4">
-          <span>Phí vận chuyển</span>
-          <span>{totalAmount > 0 ? `${shippingFee.toLocaleString("vi-VN")}đ` : "0đ"}</span>
-        </div>
-
-        <div className="flex justify-between mt-6 text-3xl font-bold text-[#D09A4E]">
-          <span>Tổng cộng</span>
-          <span>{Number(finalAmount).toLocaleString("vi-VN")}đ</span>
-        </div>
-
-        <button
-          className="w-full mt-8 bg-[#767F9E] text-white py-5 rounded-2xl font-semibold disabled:opacity-50"
-          disabled={disabled}
-          onClick={onSubmit}
-        >
-          {submitting ? "Đang đặt hàng..." : "Đặt hàng ngay"}
-        </button>
+      <div className="checkout-summary__coupon">
+        <input placeholder="Mã giảm giá" />
+        <button type="button">Áp dụng</button>
       </div>
-    </div>
+      <div className="checkout-summary__prices">
+        <div><span>Tạm tính</span><strong>{currency.format(subtotal)}</strong></div>
+        <div><span>Giảm giá</span><strong>− {currency.format(0)}</strong></div>
+        <div><span>Phí vận chuyển</span><strong>{currency.format(shippingFee)}</strong></div>
+      </div>
+      <div className="checkout-summary__total">
+        <span>Tổng cộng</span>
+        <strong>{currency.format(finalAmount)}</strong>
+      </div>
+      <label className="checkout-summary__terms">
+        <input
+          type="checkbox"
+          checked={acceptedTerms}
+          onChange={(event) => onAcceptedTermsChange(event.target.checked)}
+        />
+        <span>
+          Tôi đã đọc và đồng ý với{" "}
+          <Link to="/terms-and-privacy#terms" target="_blank" rel="noreferrer">điều khoản dịch vụ</Link>{" "}
+          và{" "}
+          <Link to="/terms-and-privacy#privacy" target="_blank" rel="noreferrer">chính sách bảo mật</Link>.
+        </span>
+      </label>
+      <button
+        type="button"
+        className="checkout-summary__submit"
+        disabled={disabled}
+        onClick={onSubmit}
+      >
+        {submitting ? "Đang đặt hàng..." : "Đặt hàng ngay"}
+        {!submitting ? <ArrowRight size={20} /> : null}
+      </button>
+    </aside>
   );
 }

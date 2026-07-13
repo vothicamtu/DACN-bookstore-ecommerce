@@ -38,9 +38,15 @@ public class BookResponse {
 
     private Integer soldCount;
 
+    private Long categoryId;
+
     private String categoryName;
 
+    private Long authorId;
+
     private String authorName;
+
+    private Long publisherId;
 
     private String publisherName;
 }
