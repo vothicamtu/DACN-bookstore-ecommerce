@@ -43,9 +43,9 @@ const SESSION_KEY = "bookland:ai-session-id";
 
 const quickSuggestions = [
     "Sách bán chạy",
+    "Sách mới",
     "Học lập trình",
     "Dưới 200.000đ",
-    "Quà tặng",
     "Tiểu thuyết",
     "Thiếu nhi",
 ];
@@ -224,7 +224,9 @@ export default function AiBookAssistant({ open, onClose }: AiBookAssistantProps)
         stopStreaming();
         setMessages([]);
         setCartMessage("");
+        setSessionId("");
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(SESSION_KEY);
     }
 
     async function copyMessage(message: AssistantMessage) {

@@ -44,6 +44,45 @@ public class GeminiServiceImpl implements GeminiService {
     }
 
     @Override
+    public Optional<String> extractIntent(String userMessage, String conversationContext) {
+        if (apiKey == null || apiKey.isBlank()) {
+            return Optional.empty();
+        }
+        String prompt = "Phân tích câu hỏi về sách, trả về JSON duy nhất, không giải thích:\n"
+                + "{\"author\":\"tên tác giả không dấu hoặc null\","
+                + "\"category\":\"thể loại tiếng Việt có dấu hoặc null\","
+                + "\"title\":\"tên sách không dấu hoặc null\","
+                + "\"maxPrice\":số VND hoặc null,"
+                + "\"bestSeller\":true/false,"
+                + "\"newest\":true/false}\n\n"
+                + "Ví dụ:\n"
+                + "- \"sách của nguyễn nhật ánh\" → {\"author\":\"nguyen nhat anh\",\"category\":null,\"title\":null,\"maxPrice\":null,\"bestSeller\":false,\"newest\":false}\n"
+                + "- \"sách mắt biếc có không\" → {\"author\":null,\"category\":null,\"title\":\"mat biec\",\"maxPrice\":null,\"bestSeller\":false,\"newest\":false}\n"
+                + "- \"sách kinh tế dưới 200k\" → {\"author\":null,\"category\":\"Kinh tế\",\"title\":null,\"maxPrice\":200000,\"bestSeller\":false,\"newest\":false}\n"
+                + "- \"sách bán chạy\" → {\"author\":null,\"category\":null,\"title\":null,\"maxPrice\":null,\"bestSeller\":true,\"newest\":false}\n\n"
+                + "Context: " + (conversationContext == null ? "" : conversationContext) + "\n"
+                + "Câu hỏi: \"" + userMessage + "\"";
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(buildGenerateContentUrl()))
+                    .timeout(Duration.ofSeconds(timeoutSeconds))
+                    .header("x-goog-api-key", apiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(buildRequestBody(prompt)))
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                return extractOutputText(response.body());
+            }
+            log.warn("Gemini extractIntent failed with status {}", response.statusCode());
+            return Optional.empty();
+        } catch (Exception ex) {
+            log.warn("Gemini extractIntent failed", ex);
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public Optional<String> generateAnswer(String prompt) {
         if (apiKey == null || apiKey.isBlank()) {
             log.warn("Gemini API key is not configured. Falling back to local recommendation answer.");
@@ -65,7 +104,11 @@ public class GeminiServiceImpl implements GeminiService {
             );
 
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                log.warn("Gemini API failed with status {}: {}", response.statusCode(), response.body());
+                if (response.statusCode() == 429) {
+                    log.warn("Gemini API rate limit exceeded (quota). Falling back to local answer.");
+                } else {
+                    log.warn("Gemini API failed with status {}: {}", response.statusCode(), response.body());
+                }
                 return Optional.empty();
             }
 

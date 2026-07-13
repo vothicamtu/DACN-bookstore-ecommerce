@@ -12,7 +12,7 @@ import cntt.dacn.backend.exception.BadRequestException;
 import cntt.dacn.backend.repository.*;
 import cntt.dacn.backend.service.OrderService;
 import cntt.dacn.backend.mapper.MapperUtil;
-import cntt.dacn.backend.util.SecurityUtil;
+import cntt.dacn.backend.utils.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -36,6 +36,8 @@ public class OrderServiceImpl implements OrderService {
     private final CartItemRepository cartItemRepository;
 
     private final UserRepository userRepository;
+
+    private final ReviewRepository reviewRepository;
 
     @Override
     @Transactional
@@ -282,10 +284,15 @@ public class OrderServiceImpl implements OrderService {
                                 )
                         );
 
+        User user = order.getUser();
+
         return order.getOrderItems()
                 .stream()
                 .map(orderItem -> {
                     Book book = orderItem.getBook();
+                    Review existingReview = (user != null && book != null)
+                            ? reviewRepository.findByUserAndBook(user, book).orElse(null)
+                            : null;
 
                     return OrderReviewItemResponse.builder()
                             .orderId(order.getId())
@@ -306,6 +313,9 @@ public class OrderServiceImpl implements OrderService {
                             )
                             .quantity(orderItem.getQuantity())
                             .price(orderItem.getPrice())
+                            .reviewed(existingReview != null)
+                            .existingRating(existingReview != null ? existingReview.getRating() : null)
+                            .existingComment(existingReview != null ? existingReview.getComment() : null)
                             .build();
                 })
                 .toList();
