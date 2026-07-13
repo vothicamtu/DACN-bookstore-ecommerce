@@ -2,6 +2,7 @@ package cntt.dacn.backend.controller;
 
 import cntt.dacn.backend.dto.response.ProductPageResponse;
 import cntt.dacn.backend.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,7 +13,7 @@ import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5176", allowCredentials = "true")
 public class ProductController {
     private final ProductService productService;
 

@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/reviews")
+@CrossOrigin(origins = "http://localhost:5176", allowCredentials = "true")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class ReviewController {
 
     private final ReviewService reviewService;

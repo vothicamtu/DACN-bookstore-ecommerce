@@ -11,6 +11,9 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import OrderHistoryDetailPage from "./pages/OrderHistoryDetailPage";
 import AdminBookPage from './pages/AdminBookPage';
+import AdminUserPage from './pages/AdminUserPage'
+import AdminCategoryPage from "./pages/AdminCategoryPage";
+import AdminOrderPage from "./pages/AdminOrderPage";
 const App: React.FC = () => {
     return (
         <BrowserRouter>
@@ -29,6 +32,9 @@ const App: React.FC = () => {
 
                 {/* CHÈN THÊM ROUTE ADMIN VÀO ĐÂY */}
                 <Route path="/admin/books" element={<AdminBookPage />} />
+                <Route path="/admin/user" element={<AdminUserPage />} />
+                <Route path="/admin/categories" element={<AdminCategoryPage />} />
+                <Route path="/admin/orders" element={<AdminOrderPage />} />
             </Routes>
         </BrowserRouter>
     );
