@@ -5,7 +5,7 @@ import axiosClient from '../api/axiosClient';
 import Header, { type HeaderCategory, type HeaderNavKey } from '../components/Header';
 import Footer from '../components/Footer';
 import '../styles/ProductAllPage.css';
-import { addToCart } from '../services/cartService';
+import { addToCart, getCartErrorMessage, hasAuthToken, isAuthError } from '../services/cartService';
 
 interface Category {
 	id: number;
@@ -120,6 +120,7 @@ export default function ProductAllPage() {
 	const [totalItems, setTotalItems] = useState(0);
 	const [addingCartId, setAddingCartId] = useState<number | null>(null);
 	const [cartMessage, setCartMessage] = useState('');
+	const [cartErrorMessage, setCartErrorMessage] = useState('');
 	const [cartErrorProductId, setCartErrorProductId] = useState<number | null>(null);
 	const [loginPromptOpen, setLoginPromptOpen] = useState(false);
 
@@ -166,6 +167,7 @@ export default function ProductAllPage() {
 		setSort('');
 		setCurrentPage(1);
 		setCartMessage('');
+		setCartErrorMessage('');
 		setCartErrorProductId(null);
 	}
 
@@ -350,16 +352,31 @@ export default function ProductAllPage() {
 	}
 
 	async function handleAddToCart(productId: number) {
+		if (!hasAuthToken()) {
+			setCartMessage('');
+			setCartErrorMessage('Vui lòng đăng nhập để thêm vào giỏ hàng.');
+			setCartErrorProductId(productId);
+			setLoginPromptOpen(true);
+			return;
+		}
+
 		setAddingCartId(productId);
 		setCartMessage('');
+		setCartErrorMessage('');
 		setCartErrorProductId(null);
 
 		try {
 			await addToCart(productId, 1);
 			setCartMessage('Đã thêm sản phẩm vào giỏ hàng.');
-		} catch {
+		} catch (error) {
 			setCartErrorProductId(productId);
-			setLoginPromptOpen(true);
+
+			if (isAuthError(error)) {
+				setCartErrorMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+				setLoginPromptOpen(true);
+			} else {
+				setCartErrorMessage(getCartErrorMessage(error, 'Không thể thêm sản phẩm vào giỏ hàng.'));
+			}
 		} finally {
 			setAddingCartId(null);
 		}
@@ -578,7 +595,7 @@ export default function ProductAllPage() {
 											</button>
 											{cartErrorProductId === product.id ? (
 												<p className="bookland-cartError">
-													Vui lòng đăng nhập để thêm vào giỏ hàng.
+													{cartErrorMessage || 'Không thể thêm sản phẩm vào giỏ hàng.'}
 												</p>
 											) : null}
 										</div>

@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,11 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
@@ -35,9 +29,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
 
-                // ĐÃ SỬA: Thay thế cors(cors -> {}) thành Customizer.withDefaults()
-                // Điều này bắt Spring Security phải lấy cấu hình CORS từ file WebConfig của bạn lên áp dụng.
-                .cors(Customizer.withDefaults())
+                .cors(cors -> {})
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -67,13 +59,13 @@ public class SecurityConfig {
                         // Admin APIs
                         .requestMatchers(
                                 "/api/admin/**"
-                        ).permitAll()
+                        ).hasRole("ADMIN")
 
                         // User APIs
                         .requestMatchers(
                                 "/api/cart/**",
                                 "/api/orders/**"
-                        ).permitAll()
+                        ).authenticated()
 
                         .anyRequest().authenticated()
                 )
@@ -96,26 +88,5 @@ public class SecurityConfig {
             AuthenticationConfiguration configuration
     ) throws Exception {
         return configuration.getAuthenticationManager();
-    }
-    // Đặt đoạn code này vào bên trong class SecurityConfig
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-
-        // Khai báo chính xác các cổng Frontend
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173",
-                "http://localhost:5174",
-                "http://localhost:5176"
-        ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // Bắt buộc phải cho phép header Authorization để gửi JWT token
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
-        configuration.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
     }
 }

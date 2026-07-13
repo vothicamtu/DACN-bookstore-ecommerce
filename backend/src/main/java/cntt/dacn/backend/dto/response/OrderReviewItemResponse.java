@@ -33,4 +33,10 @@ public class OrderReviewItemResponse {
     private Integer quantity;
 
     private BigDecimal price;
+
+    private boolean reviewed;
+
+    private Integer existingRating;
+
+    private String existingComment;
 }

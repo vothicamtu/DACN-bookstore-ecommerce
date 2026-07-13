@@ -1,37 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../styles/OrderHistoryDetailPage.css';
+import { getOrderById, type OrderResponse } from '../services/orderService';
 
-type OrderItem = {
-  orderItemId?: number;
-  bookId?: number;
-  title?: string;
-  imageUrl?: string | null;
-  quantity?: number;
-  price?: number;
-};
-
-type Order = {
-  orderId?: number;
-  items?: OrderItem[];
-  totalAmount?: number;
-  createdAt?: string;
-  shippingAddress?: string;
-  phoneNumber?: string;
-};
+type Order = OrderResponse;
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
-
-const currency = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
 
 function resolveImageUrl(url?: string | null) {
   if (!url) return undefined;
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
   return `${API_BASE_URL}${url}`;
 }
+
+const currency = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 });
 
 const dateOnlyFormatter = new Intl.DateTimeFormat('vi-VN', {
   day: '2-digit',
@@ -63,13 +48,9 @@ const OrderHistoryDetailPage: React.FC = () => {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetch(`${API_BASE_URL}/api/orders/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Không lấy được đơn hàng');
-        return res.json();
-      })
-      .then((wrapper) => setOrder(wrapper?.data ?? null))
-      .catch((e: Error) => setError(e.message))
+    getOrderById(id)
+      .then((data) => setOrder(data ?? null))
+      .catch((e: Error) => setError(e.message ?? 'Không lấy được đơn hàng'))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -105,7 +86,7 @@ const OrderHistoryDetailPage: React.FC = () => {
               ) : (
                 <div className="items-list">
                   {order?.items?.map((it) => (
-                    <div className="item-row" key={it.orderItemId ?? it.bookId}>
+                    <div className="item-row" key={it.orderItemId}>
                       {it.imageUrl ? (
                         <img src={resolveImageUrl(it.imageUrl)} alt={it.title} className="thumb" />
                       ) : (

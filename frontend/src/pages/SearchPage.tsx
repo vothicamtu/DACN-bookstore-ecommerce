@@ -8,7 +8,7 @@ import Footer from "../components/Footer";
 import FilterSidebar from "../components/FilterSidebar";
 import BookCard from "../components/BookCard";
 import Pagination from "../components/Pagination";
-import { addToCart } from "../services/cartService";
+import { addToCart, getCartErrorMessage, hasAuthToken, isAuthError } from "../services/cartService";
 import "../styles/ProductAllPage.css";
 
 interface Book {
@@ -45,6 +45,7 @@ export default function SearchPage() {
     const [totalPages, setTotalPages] = useState(0);
     const [addingCartId, setAddingCartId] = useState<number | null>(null);
     const [cartMessage, setCartMessage] = useState("");
+    const [cartErrorMessage, setCartErrorMessage] = useState("");
     const [cartErrorBookId, setCartErrorBookId] = useState<number | null>(null);
     const [loginPromptOpen, setLoginPromptOpen] = useState(false);
     const headerCategories = categories.map((category) => ({
@@ -109,16 +110,31 @@ export default function SearchPage() {
     };
 
     const handleAddToCart = async (bookId: number) => {
+        if (!hasAuthToken()) {
+            setCartMessage("");
+            setCartErrorMessage("Vui lòng đăng nhập để thêm vào giỏ hàng.");
+            setCartErrorBookId(bookId);
+            setLoginPromptOpen(true);
+            return;
+        }
+
         setAddingCartId(bookId);
         setCartMessage("");
+        setCartErrorMessage("");
         setCartErrorBookId(null);
 
         try {
             await addToCart(bookId, 1);
             setCartMessage("Đã thêm sản phẩm vào giỏ hàng.");
-        } catch {
+        } catch (error) {
             setCartErrorBookId(bookId);
-            setLoginPromptOpen(true);
+
+            if (isAuthError(error)) {
+                setCartErrorMessage("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+                setLoginPromptOpen(true);
+            } else {
+                setCartErrorMessage(getCartErrorMessage(error, "Không thể thêm sản phẩm vào giỏ hàng."));
+            }
         } finally {
             setAddingCartId(null);
         }
@@ -195,7 +211,7 @@ export default function SearchPage() {
                                     adding={addingCartId === book.id}
                                     addToCartError={
                                         cartErrorBookId === book.id
-                                            ? "Vui lòng đăng nhập để thêm vào giỏ hàng."
+                                            ? cartErrorMessage || "Không thể thêm sản phẩm vào giỏ hàng."
                                             : ""
                                     }
                                     onAddToCart={handleAddToCart}
