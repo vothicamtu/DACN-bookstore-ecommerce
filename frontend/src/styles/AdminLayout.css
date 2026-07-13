@@ -1,0 +1,121 @@
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f5f3ee;
+}
+
+.admin-layout__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.3s ease;
+}
+
+/* Header */
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: white;
+    border-bottom: 1px solid #e6dcc8;
+    box-shadow: 0 2px 8px rgba(88, 59, 20, 0.04);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.admin-header__left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.admin-header__toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid #e6dcc8;
+    background: white;
+    border-radius: 8px;
+    color: #8d7a65;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.admin-header__toggle:hover {
+    border-color: #d8a85e;
+    color: #d8a85e;
+    background: #fffbf5;
+}
+
+.admin-header__right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-header__icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid #e6dcc8;
+    background: white;
+    border-radius: 8px;
+    color: #8d7a65;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.admin-header__icon-btn:hover {
+    border-color: #d8a85e;
+    color: #d8a85e;
+    background: #fffbf5;
+}
+
+.admin-header__logout {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid #e6dcc8;
+    background: white;
+    border-radius: 8px;
+    color: #8d7a65;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.admin-header__logout:hover {
+    border-color: #dc2626;
+    color: #dc2626;
+    background: #fee2e2;
+}
+
+/* Content */
+.admin-layout__content {
+    flex: 1;
+    overflow-y: auto;
+    background: #f5f3ee;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-layout {
+        flex-direction: column;
+    }
+
+    .admin-header__toggle {
+        display: flex;
+    }
+
+    .admin-header__logout span {
+        display: none;
+    }
+}
