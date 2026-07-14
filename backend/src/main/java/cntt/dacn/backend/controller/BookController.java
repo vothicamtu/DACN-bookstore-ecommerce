@@ -12,8 +12,8 @@ import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/books")
+@CrossOrigin(origins = "http://localhost:5176", allowCredentials = "true")
 @RequiredArgsConstructor
-@CrossOrigin("*")
 public class BookController {
 
     private final BookService bookService;
