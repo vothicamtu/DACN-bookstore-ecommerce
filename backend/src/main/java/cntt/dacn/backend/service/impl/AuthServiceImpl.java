@@ -95,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(request.getEmail())
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER) // Sửa đổi từ ROLE_USER thành USER cho đúng Enum
+                .role(Role.ROLE_USER) // Sửa đổi từ ROLE_USER thành USER cho đúng Enum
                 .status(true)
                 .createdAt(LocalDateTime.now())
                 .build();

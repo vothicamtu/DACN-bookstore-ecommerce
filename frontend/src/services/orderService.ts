@@ -54,10 +54,21 @@ export interface CreateOrderPayload {
     cartItemIds?: number[];
 }
 
-export async function createOrder(payload: CreateOrderPayload) {
-    const response = await axiosClient.post<ApiResponse<OrderResponse>>("/orders", payload);
+export interface CreateOrderResponse {
+    order: OrderResponse;
+    paymentUrl?: string;
+}
+
+export async function createOrder(payload: CreateOrderPayload): Promise<CreateOrderResponse> {
+    // Sửa kiểu của axiosClient.post từ OrderResponse sang CreateOrderResponse
+    const response = await axiosClient.post<ApiResponse<CreateOrderResponse>>("/orders", payload);
     notifyCartUpdated();
     return response.data.data;
+}
+
+export async function verifyVNPayPayment(searchParams: string) {
+    const response = await axiosClient.get<ApiResponse<any>>(`/orders/vnpay-callback${searchParams}`);
+    return response.data;
 }
 
 export async function getMyOrders(page = 0, size = 10) {

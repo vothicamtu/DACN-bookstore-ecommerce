@@ -1,0 +1,524 @@
+/* --- TỔNG THỂ & BREADCRUMB --- */
+.bookland-detail-container {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #333333;
+    background-color: #ffffff;
+}
+
+.max-width-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.breadcrumb {
+    padding: 20px 0;
+    font-size: 13px;
+    color: #888888;
+}
+
+.breadcrumb span {
+    cursor: pointer;
+}
+
+.breadcrumb span:hover {
+    color: #555555;
+}
+
+.breadcrumb span.active {
+    color: #bfa78a;
+    cursor: default;
+}
+
+/* --- GALLERY HÌNH ẢNH --- */
+.main-image-wrapper {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.main-product-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+}
+
+.sub-img-item {
+    width: 70px;
+    height: 70px;
+    border: 2px solid #eeeeee;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sub-img-item.active {
+    border-color: #7b84a1;
+}
+
+.sub-img-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- THÔNG TIN CHI TIẾT & HÀNH ĐỘNG --- */
+.detail-bestseller-tag {
+    background-color: #edeef2;
+    color: #5d6785;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    align-self: flex-start;
+    letter-spacing: 0.5px;
+}
+
+.detail-product-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 12px 0 6px 0;
+    color: #111111;
+}
+
+.detail-meta-row {
+    font-size: 14px;
+    color: #666666;
+}
+
+.accent-text {
+    color: #444444;
+}
+
+.stars-orange {
+    color: #fcc200;
+    font-size: 16px;
+}
+
+.review-count {
+    font-size: 13px;
+    color: #888888;
+}
+
+.detail-current-price {
+    font-size: 26px;
+    font-weight: 700;
+    color: #de793b;
+}
+
+.detail-old-price {
+    font-size: 16px;
+    color: #aaaaaa;
+    text-decoration: line-through;
+}
+
+.detail-discount-badge {
+    background-color: #ffebeb;
+    color: #eb5757;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.stock-status-text {
+    font-size: 13px;
+    color: #27ae60;
+    margin: 4px 0;
+}
+
+/* Bộ đếm số lượng */
+.quantity-counter {
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.quantity-counter button {
+    background: #fdfdfd;
+    border: none;
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.quantity-counter button:hover {
+    background: #eeeeee;
+}
+
+.quantity-counter input {
+    width: 44px;
+    height: 36px;
+    text-align: center;
+    border: none;
+    border-left: 1px solid #cccccc;
+    border-right: 1px solid #cccccc;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+}
+
+/* Nút bấm hành động chính */
+.btn-buy-now {
+    flex: 1;
+    background-color: #7b84a1;
+    color: white;
+    border: none;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-buy-now:hover {
+    background-color: #666e8a;
+}
+
+.btn-add-cart {
+    flex: 1;
+    background-color: transparent;
+    color: #de793b;
+    border: 1px solid #de793b;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-add-cart:hover {
+    background-color: #ffebe0;
+}
+
+/* --- TABS KHỐI THÔNG TIN MÔ TẢ & CHI TIẾT --- */
+.tab-content-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #f3ebd8;
+    overflow: hidden;
+}
+
+.tab-card-header {
+    background-color: #fbf5e7;
+    padding: 14px 20px;
+    font-weight: 600;
+    font-size: 16px;
+    color: #7c6244;
+}
+
+.tab-card-body {
+    padding: 20px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555555;
+    position: relative;
+}
+
+.btn-read-more {
+    display: block;
+    width: 100%;
+    background: none;
+    border: 1px solid #e5dbbe;
+    color: #bfa78a;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 16px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-read-more:hover {
+    background-color: #faf7f0;
+}
+
+.spec-table-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.spec-row {
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #eeeeee;
+}
+
+.spec-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.spec-label {
+    color: #888888;
+}
+
+.spec-value {
+    font-weight: 500;
+    color: #333333;
+}
+
+/* --- KHỐI ĐÁNH GIÁ ĐỘC GIẢ --- */
+.section-title-main {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+}
+
+.section-subtitle-sub {
+    font-size: 13px;
+    color: #888888;
+    margin: 0;
+}
+
+.btn-write-review {
+    background: none;
+    border: 1px solid #de793b;
+    color: #de793b;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-write-review:hover {
+    background-color: #ffebe0;
+}
+
+.review-item-card {
+    background-color: #ffffff;
+    border: 1px solid #eeeeee;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.review-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.review-username {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.review-stars {
+    color: #fcc200;
+    font-size: 12px;
+}
+
+.review-date {
+    font-size: 11px;
+    color: #bbbbbb;
+    display: block;
+    margin: 2px 0 8px 0;
+}
+
+.review-text-p {
+    font-size: 13px;
+    color: #555555;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.view-more-reviews-link {
+    font-size: 13px;
+    color: #de793b;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* --- SÁCH TƯƠNG TỰ (PHẦN ĐƯỢC CHỈNH SỬA) --- */
+.view-all-link-detail {
+    font-size: 13px;
+    color: #de793b;
+    cursor: pointer;
+}
+
+.book-card-detail {
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex; /* Thêm để điều khiển layout bên trong */
+    flex-direction: column; /* Thêm để xếp nội dung theo chiều dọc */
+}
+
+.book-card-detail:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+.book-image-container-detail {
+    width: 100%;
+    height: 280px;
+    background-color: #f5f5f5;
+    overflow: hidden;
+    border-radius: 6px;
+    /* Các thuộc tính mới để căn giữa ảnh */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px; /* Thêm padding để ảnh không dính viền */
+}
+
+.book-image-container-detail img {
+    /* Sửa lại các thuộc tính này */
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain; /* Thay đổi giá trị này */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Đổ bóng cho bìa sách */
+}
+
+.book-info-detail {
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Giúp phần info chiếm hết không gian còn lại */
+}
+
+.book-title-detail {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    /* Giới hạn 2 dòng để các card đều nhau */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: 40px; /* Chiều cao cố định cho 2 dòng */
+    line-height: 20px;
+}
+
+.book-author-detail {
+    font-size: 12px;
+    color: #888888;
+    margin: 0 0 6px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.book-rating-detail {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #fcc200;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.rating-number-detail {
+    color: #666666;
+    font-weight: 500;
+}
+
+.book-footer-detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto; /* Đẩy footer xuống dưới cùng của thẻ card */
+}
+
+.book-price-detail {
+    font-size: 15px;
+    font-weight: 700;
+    color: #de793b;
+}
+
+.btn-cart-small {
+    background-color: #fbf5e7;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.cart-icon-svg-small {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: #7c6244;
+    stroke-width: 2;
+}
+
+/* --- KHỐI GỢI Ý CHO BẠN --- */
+.suggestions-container-box {
+    background-color: #f3ebd8;
+    padding: 28px;
+    border-radius: 12px;
+}
+
+.suggest-subtitle-detail {
+    font-size: 13px;
+    color: #7c6244;
+    margin: 0;
+}
+
+.btn-control-detail {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #7c6244;
+    background: none;
+    color: #7c6244;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-control-detail:hover {
+    background-color: rgba(124, 98, 68, 0.1);
+}
+
+.suggest-card-detail {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.suggest-img-detail {
+    width: 70px;
+    height: 85px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.suggest-title-detail {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 2px 0;
+}
+
+.suggest-author-detail {
+    font-size: 12px;
+    color: #888888;
+    margin: 0;
+}
+
+.suggest-price-detail {
+    font-size: 14px;
+    font-weight: 700;
+    color: #de793b;
+}

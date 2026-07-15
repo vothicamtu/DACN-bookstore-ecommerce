@@ -12,6 +12,7 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import OrderHistoryDetailPage from "./pages/OrderHistoryDetailPage";
 import TermsPrivacyPage from "./pages/TermsPrivacyPage";
+import ProductDetail from "./pages/ProductDetail";
 
 const App: React.FC = () => {
   return (
@@ -29,9 +30,9 @@ const App: React.FC = () => {
           <Route path="/checkout/success" element={<OrderSuccessPage />} />
           <Route path="/orders/:id" element={<OrderHistoryDetailPage />} />
           <Route path="/terms-and-privacy" element={<TermsPrivacyPage />} />
+          <Route path="/books/:id" element={<ProductDetail />} />
       </Routes>
     </BrowserRouter>
   );
 };
-
 export default App;

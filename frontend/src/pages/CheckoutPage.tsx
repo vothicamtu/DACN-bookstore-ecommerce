@@ -82,10 +82,10 @@ export default function CheckoutPage() {
     ].filter(Boolean).join(", ");
 
     if (
-      !recipient.fullName.trim() ||
-      !recipient.email.trim() ||
-      !recipient.phoneNumber.trim() ||
-      !shippingAddress.trim()
+        !recipient.fullName.trim() ||
+        !recipient.email.trim() ||
+        !recipient.phoneNumber.trim() ||
+        !shippingAddress.trim()
     ) {
       setError("Vui lòng nhập họ tên, email, số điện thoại và địa chỉ nhận hàng.");
       return;
@@ -95,7 +95,8 @@ export default function CheckoutPage() {
     setError("");
 
     try {
-      const order = await createOrder({
+      // Gọi service đã cập nhật kiểu trả về
+      const result = await createOrder({
         customerName: recipient.fullName,
         customerEmail: recipient.email,
         shippingAddress,
@@ -105,13 +106,24 @@ export default function CheckoutPage() {
         note,
         cartItemIds: cart?.items.map((item) => item.cartItemId),
       });
-      navigate("/checkout/success", { state: { order } });
+
+      // LOGIC XỬ LÝ VNPAY:
+      console.log("Dữ liệu Backend trả về:", result); // LOG 2
+
+      // Nếu LOG 1 không hiện chữ "atm" -> Sửa giá trị so sánh bên dưới
+      // Nếu LOG 2 không có trường "paymentUrl" -> Sửa logic ở Backend
+      if ((paymentMethod as string) === "banking" && result.paymentUrl) {
+        window.location.href = result.paymentUrl;
+      } else {
+        navigate("/checkout/success", { state: { order: result.order } });
+      }
+
     } catch (requestError) {
       if (axios.isAxiosError(requestError)) {
         const responseData = requestError.response?.data;
         const validationMessage = responseData && typeof responseData === "object"
-          ? Object.values(responseData).find((value): value is string => typeof value === "string")
-          : undefined;
+            ? Object.values(responseData).find((value): value is string => typeof value === "string")
+            : undefined;
 
         if (requestError.response?.status === 401 || requestError.response?.status === 403) {
           setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại trước khi đặt hàng.");

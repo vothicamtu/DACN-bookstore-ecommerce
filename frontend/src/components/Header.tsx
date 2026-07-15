@@ -160,7 +160,7 @@ export default function Header({
                 <button
                     type="button"
                     className="bookland-header__brand"
-                    onClick={() => navigate("/books")}
+                    onClick={() => navigate("/")}
                     aria-label="Về cửa hàng BookLand"
                 >
                     <span className="bookland-header__logo">BookLand</span>
@@ -170,7 +170,7 @@ export default function Header({
                 <button
                     type="button"
                     className={`bookland-header__link ${activeNav === 'store' ? 'is-active' : ''}`}
-                    onClick={() => onStoreClick ? onStoreClick() : navigate("/books")}
+                    onClick={() => onStoreClick ? onStoreClick() : navigate("/")}
                 >
                     Cửa hàng
                 </button>
