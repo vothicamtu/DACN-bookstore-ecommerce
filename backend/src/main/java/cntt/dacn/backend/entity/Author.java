@@ -21,4 +21,8 @@ public class Author {
 
     @Column(name="created_at")
     private LocalDateTime createdAt;
+
+    public Object getName() {
+        return null;
+    }
 }
