@@ -60,4 +60,9 @@ public class Order {
             status = OrderStatus.PENDING;
         }
     }
+    private BigDecimal totalPrice;
+
+    public BigDecimal getTotalPrice() {
+        return this.totalPrice != null ? this.totalPrice : BigDecimal.ZERO;
+    }
 }
