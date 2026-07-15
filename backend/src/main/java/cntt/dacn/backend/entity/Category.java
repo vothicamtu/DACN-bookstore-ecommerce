@@ -19,4 +19,7 @@ public class Category {
 
     private String description;
 
+    public Object getName() {
+        return null;
+    }
 }

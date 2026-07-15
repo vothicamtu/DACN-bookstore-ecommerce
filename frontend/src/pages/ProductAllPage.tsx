@@ -129,12 +129,19 @@ export default function ProductAllPage() {
 	const categoryQuery = searchParams.get('category') ?? '';
 	const sortQuery = searchParams.get('sort') ?? '';
 	const keywordQuery = searchParams.get('keyword') ?? '';
-	const headerCategories: HeaderCategory[] = categories.map((category) => ({
-		label: category.categoryName,
-		value: category.categoryName,
-	}));
-	const activeCategoryValue =
-		categories.find((category) => category.categoryName === categoryQuery)?.categoryName ?? categoryQuery;
+
+	// SỬA LỖI CONSOLE: Kiểm tra array an toàn trước khi map
+	const headerCategories: HeaderCategory[] = Array.isArray(categories)
+		? categories.map((category) => ({
+			label: category.categoryName,
+			value: category.categoryName,
+		}))
+		: [];
+
+	const activeCategoryValue = Array.isArray(categories)
+		? (categories.find((category) => category.categoryName === categoryQuery)?.categoryName ?? categoryQuery)
+		: categoryQuery;
+
 	const activeNav: HeaderNavKey = categoryQuery
 		? 'category'
 		: sortQuery === 'bestseller'
@@ -142,15 +149,25 @@ export default function ProductAllPage() {
 			: sortQuery === 'newest'
 				? 'newest'
 				: 'store';
+
 	const selectedSortLabel =
 		sortOptions.find((option) => option.value === sort)?.label ?? 'Sắp xếp';
 
 	const fetchCategories = async () => {
 		try {
 			const response = await axiosClient.get("/categories");
-			setCategories(response.data);
+
+			// SỬA LỖI CONSOLE: Kiểm tra kỹ định dạng dữ liệu trả về từ Backend
+			if (response.data && Array.isArray(response.data.content)) {
+				setCategories(response.data.content);
+			} else if (Array.isArray(response.data)) {
+				setCategories(response.data);
+			} else {
+				setCategories([]);
+			}
 		} catch (error) {
-			console.error(error);
+			console.error("Lỗi khi lấy danh mục:", error);
+			setCategories([]);
 		}
 	};
 
@@ -238,7 +255,7 @@ export default function ProductAllPage() {
 	}, []);
 
 	useEffect(() => {
-		if (categoryQuery) {
+		if (categoryQuery && Array.isArray(categories)) {
 			const matchedCategory = categories.find((category) => category.categoryName === categoryQuery);
 			setSelectedCategory(matchedCategory?.categoryName ?? categoryQuery);
 		} else {
@@ -291,10 +308,22 @@ export default function ProductAllPage() {
 		axiosClient.get("/products", { params })
 			.then((response) => {
 				if (isMounted) {
-					const data = response.data as ApiProductPage;
-					setProducts(data.content.map(mapProduct));
-					setTotalPages(data.totalPages);
-					setTotalItems(data.totalElements);
+					const data = response.data;
+
+					// SỬA TẠI ĐÂY: Sử dụng "items" thay vì "content" theo đúng JSON của bạn
+					if (data && Array.isArray(data.items)) {
+						setProducts(data.items.map(mapProduct));
+						setTotalPages(data.totalPages ?? 0);
+						setTotalItems(data.totalItems ?? 0); // Đổi từ totalElements thành totalItems
+					} else if (Array.isArray(data)) {
+						setProducts(data.map(mapProduct));
+						setTotalPages(1);
+						setTotalItems(data.length);
+					} else {
+						setProducts([]);
+						setTotalPages(0);
+						setTotalItems(0);
+					}
 					setError('');
 				}
 			})
@@ -413,7 +442,9 @@ export default function ProductAllPage() {
 									>
 										Tất cả
 									</button>
-									{categories.map((category) => (
+
+									{/* SỬA LỖI CONSOLE: Sử dụng Array.isArray để lọc lỗi trước khi map */}
+									{Array.isArray(categories) && categories.map((category) => (
 										<button
 											key={category.id}
 											type="button"

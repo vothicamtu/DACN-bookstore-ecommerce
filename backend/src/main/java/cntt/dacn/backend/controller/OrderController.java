@@ -9,8 +9,10 @@ import cntt.dacn.backend.dto.response.OrderReviewItemResponse;
 import cntt.dacn.backend.dto.response.PagedResponse;
 import cntt.dacn.backend.entity.OrderStatus;
 import cntt.dacn.backend.service.OrderService;
+import cntt.dacn.backend.service.ReportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -117,5 +119,27 @@ public class OrderController {
                         .data(response)
                         .build()
         );
+    }
+
+    @Autowired
+    private ReportService reportService; // Tiêm ReportService đã có sẵn của bạn vào đây
+
+    // 1. Endpoint lấy dữ liệu tổng hợp (Summary) từ SQL
+    @GetMapping("/admin/reports/summary")
+    public ResponseEntity<?> getReportSummary() {
+        // Gọi trực tiếp xuống tầng Service -> Repository -> SQL của bạn
+        return ResponseEntity.ok(reportService.getSummaryReport());
+    }
+
+    // 2. Endpoint lấy doanh thu theo tháng từ SQL
+    @GetMapping("/admin/reports/revenue-monthly")
+    public ResponseEntity<?> getMonthlyRevenue(@RequestParam("year") int year) {
+        return ResponseEntity.ok(reportService.getMonthlyRevenue(year));
+    }
+
+    // 3. Endpoint lấy Top 5 sách bán chạy trực tiếp từ SQL
+    @GetMapping("/admin/reports/top-selling")
+    public ResponseEntity<?> getTopSellingBooks() {
+        return ResponseEntity.ok(reportService.getTopSellingBooks());
     }
 }

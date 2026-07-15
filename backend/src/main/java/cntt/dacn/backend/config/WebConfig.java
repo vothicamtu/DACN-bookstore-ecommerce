@@ -9,11 +9,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                // XÓA DẤU "*" VÀ THAY BẰNG ĐỊA CHỈ CHÍNH XÁC CỦA FRONTEND
-                .allowedOrigins("http://localhost:5176", "http://localhost:5173", "http://localhost:5174")
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true); // Vì dòng này là true nên không được dùng "*" ở allowedOrigins
+                .allowCredentials(true);
     }
 }
